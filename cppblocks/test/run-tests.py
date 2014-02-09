@@ -16,7 +16,8 @@ sys.path.append(os.path.join(testDir, '../..'))
 
 import cppblocks
 
-verbose = True
+#verbose = True
+verbose = False
 
 # Print some progress information in case verbose mode is enabled
 def information(msg):
