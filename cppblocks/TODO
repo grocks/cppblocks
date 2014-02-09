@@ -1,0 +1,4 @@
+* Add some tests to check that #ifndef works
+* Add some more complete #ifdef/#ifndef tests for source files
+* Augment run-tests to deal with generated exceptions
+  * Add tests to check for error handling (messages.py)
