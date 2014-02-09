@@ -24,14 +24,25 @@ def information(msg):
     if verbose:
         print msg
 
-def runTestCase(test, name):
-    if test['expected'] != cppblocks.getDisabledBlocks(*test['input']):
+def runTestCase(testDir, test, name):
+    filepath = os.path.join(testDir, test['input'][0])
+    analyzeHeaders = test['input'][1]
+    includeDirsAngle = test['input'][2]
+    includeDirsQuote = test['input'][3]
+    initialDefines = test['input'][4]
+
+    disabledBlocks = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
+    # Translate filepaths back to paths used in the tests
+    for block in disabledBlocks:
+        block['filepath'] = os.path.relpath(block['filepath'], testDir)
+
+    if test['expected'] != disabledBlocks:
         print "Test failed {0}: '{1}'".format(name, test['description'])
 
 def runTestCases(testDir, testCase, name):
     for test in testCase.testCases:
         information('  Test: {0}'.format(test['description']))
-        runTestCase(test, name)
+        runTestCase(testDir, test, name)
 
 def runTest(testDir, name):
     information('Running test {0}'.format(name))

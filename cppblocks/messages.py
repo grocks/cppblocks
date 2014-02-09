@@ -13,3 +13,7 @@ class UndefinedSymbol(CppBlocksException):
 class IllegalSymbol(CppBlocksException):
     def __init__(self, name):
         self.message = "The token '{0}' does not form a valid CPP symbol.".format(name)
+
+class FileNotFound(CppBlocksException):
+    def __init__(self, filepath):
+        self.message = "Could not locate file '{0}'.".format(filepath)

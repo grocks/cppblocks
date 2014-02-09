@@ -1,7 +1,12 @@
 testCases = [
         {
             "description" : "Empty files have no disabled blocks",
-            "expected" : [],
+            "expected" : [
+                  {
+                      "filepath" : "input/empty.c",
+                      "disabledBlocks" : []
+                  }
+                ],
             "input" : [ "input/empty.c", False, None, None, [] ]
         }
 ]

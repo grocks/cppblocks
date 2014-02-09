@@ -9,7 +9,7 @@ class Database:
     def __init__(self):
         self.symbols = {}
 
-    def add(self, symbol, value=0):
+    def add(self, symbol, value=None):
         Database.validate(symbol)
         self.symbols[symbol] = value
 
