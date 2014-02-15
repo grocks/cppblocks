@@ -31,20 +31,20 @@ class Token:
         return self.__str__()
 
 class IfDefToken(Token):
-    def __init__(self, line, condition):
+    def __init__(self, line, symbol):
         Token.__init__(self, 'ifdef', line)
-        self.condition = condition
+        self.symbol = symbol
 
     def __str__(self):
-        return '{0}({1})'.format(Token.__str__(self), self.condition)
+        return '{0}({1})'.format(Token.__str__(self), self.symbol)
 
 class IfnDefToken(Token):
-    def __init__(self, line, condition):
+    def __init__(self, line, symbol):
         Token.__init__(self, 'ifndef', line)
-        self.condition = condition
+        self.symbol = symbol
 
     def __str__(self):
-        return '{0}({1})'.format(Token.__str__(self), self.condition)
+        return '{0}({1})'.format(Token.__str__(self), self.symbol)
 
 class EndIfToken(Token):
     def __init__(self, line):
@@ -99,11 +99,11 @@ class CppScanner:
             self.t_endif(match)
 
     def t_ifdef(self, m):
-        t = IfDefToken(self.currentLine, condition=m.group(1))
+        t = IfDefToken(self.currentLine, symbol=m.group(1))
         self.rv.append(t)
 
     def t_ifndef(self, m):
-        t = IfnDefToken(self.currentLine, condition=m.group(1))
+        t = IfnDefToken(self.currentLine, symbol=m.group(1))
         self.rv.append(t)
 
     def t_endif(self, m):

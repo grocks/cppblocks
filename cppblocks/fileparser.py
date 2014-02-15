@@ -6,7 +6,7 @@ from database import Database
 from messages import FileNotFound
 import re
 
-class CppParser:
+class CppFileParser:
     def __init__(self, filepath, database):
         self.filepath = filepath
         self.symbols = database

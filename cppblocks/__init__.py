@@ -5,7 +5,10 @@ getDisabledBlocks
 from checkargs import check as checkArgs
 from predefines import importPredefinedSymbols
 from database import Database
-from fileparser import CppParser
+from fileparser import CppFileParser
+
+from scanner import CppScanner
+from parser import CppParser
 
 def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines):
     checkargs.check(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
@@ -14,6 +17,13 @@ def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuo
 
     importPredefinedSymbols(database, initialDefines)
 
-    parser = CppParser(filepath, database)
+    with open(filepath, 'r') as f:
+        data = f.read()
 
-    return parser.parse()
+    scanner = CppScanner(data)
+    tokens = scanner.tokenize()
+
+    parser = CppParser(filepath, database)
+    disabledBlocks = parser.parse(tokens)
+
+    return disabledBlocks
