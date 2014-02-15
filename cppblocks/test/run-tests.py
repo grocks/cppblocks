@@ -37,7 +37,7 @@ def runTestCase(testDir, test, name):
         block['filepath'] = os.path.relpath(block['filepath'], testDir)
 
     if test['expected'] != disabledBlocks:
-        print "Test failed {0}: '{1}'".format(name, test['description'])
+        print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
 
 def runTestCases(testDir, testCase, name):
     for test in testCase.testCases:
