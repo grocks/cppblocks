@@ -18,5 +18,15 @@ testCases = [
                   }
                 ],
             "input" : [ "input/02-true-and-false-ifndef.c", False, None, None, [] ]
+        },
+        {
+            "description" : "Nested ifdefs in same file work",
+            "expected" : [
+                  {
+                      "filepath" : "input/03-nested-ifdefs.c",
+                      "disabledBlocks" : [ (1,7), (13,3) ]
+                  }
+                ],
+            "input" : [ "input/03-nested-ifdefs.c", False, None, None, [] ]
         }
 ]
