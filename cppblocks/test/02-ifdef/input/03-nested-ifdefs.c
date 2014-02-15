@@ -1,9 +1,9 @@
 #ifdef FOO
-int a = 2;
+int a = 1;
 #ifdef BAR
-int i = 3;
+int b = 1;
 #endif
-int j = 1;
+int c = 1;
 #endif
 
 #define FOO
@@ -11,18 +11,18 @@ int j = 1;
 #ifdef FOO
 int a = 2;
 #ifdef BAR
-int i = 3;
+int b = 2;
 #endif
-int j = 1;
+int c = 2;
 #endif
 
 #define BAR
 
 #ifdef FOO
-int a = 2;
+int a = 3;
 #ifdef BAR
-int i = 3;
+int b = 3;
 #endif
-int j = 1;
+int c = 3;
 #endif
 

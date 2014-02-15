@@ -30,6 +30,9 @@ class Token:
     def __repr__(self):
         return self.__str__()
 
+    def __cmp__(self, o):
+        return cmp(self.typ, o)
+
 class IfDefToken(Token):
     def __init__(self, line, symbol):
         Token.__init__(self, 'ifdef', line)

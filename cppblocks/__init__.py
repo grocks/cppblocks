@@ -9,6 +9,7 @@ from fileparser import CppFileParser
 
 from scanner import CppScanner
 from parser import CppParser
+from compiler import DisabledBlocksCompiler
 
 def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines):
     checkargs.check(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
@@ -23,7 +24,11 @@ def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuo
     scanner = CppScanner(data)
     tokens = scanner.tokenize()
 
-    parser = CppParser(filepath, database)
-    disabledBlocks = parser.parse(tokens)
+    parser = CppParser()
+    astRootNode = parser.parse(tokens)
+
+    disabledBlocks = []
+    compiler = DisabledBlocksCompiler(filepath, database, astRootNode)
+    disabledBlocks = compiler.getDisabledBlocks()
 
     return disabledBlocks

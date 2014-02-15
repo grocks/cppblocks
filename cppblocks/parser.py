@@ -6,54 +6,124 @@ The parser is implemented using the Spark GenericParser parser generator.
 The token names used in the parser's grammar are taken from the C standard.
 '''
 
-from messages import UnsupportedToken
+from lib.spark import GenericParser
 
-class CppParser:
-    def __init__(self, filepath, database):
-        self.filepath = filepath
-        self.symbols = database
-        self.reset()
+class astNode:
+    def __init__(self, typ, line):
+        self.typ = typ
+        self.line = line
+        self.children = []
+        self.siblings = []
 
-    def reset(self):
-        self.disabledBlocks = []
-        self.skipBlock = False
-        self.startOfBlock = None
+    def __str__(self,indent=0):
+        str = "{0}{1}.{2}".format(indent*'  ', self.typ, self.line)
+        for child in self.children:
+            str = '{0}\n{1}'.format(str, child.__str__(indent+1))
+        for sibling in self.siblings:
+            str = '{0}\n{1}'.format(str, sibling.__str__(indent))
+        return str
 
-    def parse(self, tokens):
-        self.reset()
-        for token in tokens:
-            if token.typ == 'define':
-                self.p_define(token)
-            elif token.typ == 'ifdef':
-                self.p_ifdef(token)
-            elif token.typ == 'ifndef':
-                self.p_ifndef(token)
-            elif token.typ == 'endif':
-               self.p_endif(token)
-            else:
-                raise UnsupportedToken(token)
+    def __repr__(self):
+        return self.__str__()
 
-        return [ { 'filepath' : self.filepath,
-                   'disabledBlocks' : self.disabledBlocks } ]
+class astDefineNode(astNode):
+    def __init__(self, line, name, value):
+        astNode.__init__(self, 'define', line)
+        self.name = name
+        self.value = value
 
-    def p_endif(self, token):
-        if self.skipBlock == True:
-            length = token.line - self.startOfBlock + 1
-            self.addDisabledBlock(self.startOfBlock, length)
-            self.skipBlock = False
+class astIfdefNode(astNode):
+    def __init__(self, line, symbol):
+        astNode.__init__(self, 'ifdef', line)
+        self.symbol = symbol
+        self.length = line
 
-    def p_ifdef(self, token):
-        if not self.symbols.defined(token.symbol):
-            self.skipBlock = True
-            self.startOfBlock = token.line
+class astIfndefNode(astNode):
+    def __init__(self, line, symbol):
+        astNode.__init__(self, 'ifndef', line)
+        self.symbol = symbol
+        self.length = line
 
-    def p_ifndef(self, token):
-        if self.symbols.defined(token.symbol):
-            self.skipBlock = True
-            self.startOfBlock = token.line
+class astEndifNode(astNode):
+    def __init__(self, line):
+        astNode.__init__(self, 'endif', line)
 
-    def p_define(self, token):
-        self.symbols.add(token.name, token.value)
 
-    def addDisabledBlock(self, start, length):
-        self.disabledBlocks.append( (start,length) )
+class CppParser(GenericParser):
+    def __init__(self, startToken='preprocessingFile'):
+        GenericParser.__init__(self, startToken)
+
+    def p_empyPreprocessingFile(self, args):
+        '''
+            preprocessingFile ::=
+        '''
+        return None
+
+    def p_preprocessingFile(self, args):
+        '''
+            preprocessingFile ::= group
+        '''
+        return args[0]
+
+    def p_multiGroup(self, args):
+        '''
+            group ::= group groupPart
+        '''
+        args[0].siblings.append(args[1])
+        return args[0]
+
+
+    def p_singleGroup(self, args):
+        '''
+            group ::= groupPart
+        '''
+        return args[0]
+
+    def p_groupPart(self, args):
+        '''
+            groupPart ::= ifSection
+            groupPart ::= controlLine
+        '''
+        return args[0]
+
+    def p_nestedIfSection(self, args):
+        '''
+            ifSection ::= ifGroup group endif
+        '''
+        # Can also be an ifndef node
+        astIfdefNode = args[0]
+        endifToken = args[2]
+        astIfdefNode.length = endifToken.line - astIfdefNode.line + 1
+        astIfdefNode.children.append(args[1])
+        return astIfdefNode
+
+    def p_leafIfSection(self, args):
+        '''
+            ifSection ::= ifGroup endif
+        '''
+        # Can also be an ifndef node
+        astIfdefNode = args[0]
+        endifToken = args[1]
+        astIfdefNode.length = endifToken.line - astIfdefNode.line + 1
+        return astIfdefNode
+
+    def p_ifdef(self, args):
+        '''
+            ifGroup ::= ifdef
+        '''
+        t = args[0]
+        return astIfdefNode(t.line, t.symbol)
+
+    def p_ifndef(self, args):
+        '''
+            ifGroup ::= ifndef
+        '''
+        t = args[0]
+        return astIfndefNode(t.line, t.symbol)
+
+    def p_define(self, args):
+        '''
+            controlLine ::= define
+        '''
+        t = args[0]
+        return astDefineNode(t.line, t.name, t.value)
