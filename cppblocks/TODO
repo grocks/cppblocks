@@ -1,2 +1,3 @@
 * Augment run-tests to deal with generated exceptions
   * Add tests to check for error handling (messages.py)
+* Test #define KEY VALUE (not just #define KEY)
