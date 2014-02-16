@@ -32,6 +32,11 @@ class astDefineNode(astNode):
         self.name = name
         self.value = value
 
+class astUndefNode(astNode):
+    def __init__(self, line, symbol):
+        astNode.__init__(self, 'undef', line)
+        self.symbol = symbol
+
 class astIfdefNode(astNode):
     def __init__(self, line, symbol):
         astNode.__init__(self, 'ifdef', line)
@@ -127,3 +132,10 @@ class CppParser(GenericParser):
         '''
         t = args[0]
         return astDefineNode(t.line, t.name, t.value)
+
+    def p_undef(self, args):
+        '''
+            controlLine ::= undef
+        '''
+        t = args[0]
+        return astUndefNode(t.line, t.symbol)

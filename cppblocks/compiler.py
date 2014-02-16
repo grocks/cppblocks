@@ -15,7 +15,8 @@ class DisabledBlocksCompiler:
         self.visitorMap = {
                 'ifdef' : self.v_ifdef,
                 'ifndef' : self.v_ifndef,
-                'define' : self.v_define
+                'define' : self.v_define,
+                'undef' : self.v_undef
         }
 
     def getDisabledBlocks(self):
@@ -54,6 +55,9 @@ class DisabledBlocksCompiler:
 
     def v_define(self, node):
         self.symbols.add(node.name, node.value)
+
+    def v_undef(self, node):
+        self.symbols.remove(node.symbol)
 
     def addDisabledBlock(self, start, length):
         self.disabledBlocks.append( (start,length) )

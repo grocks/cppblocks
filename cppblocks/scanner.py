@@ -10,9 +10,10 @@ import re
 
 # We compile all regular expression used for parsing to speed up the tokenization process
 reCppDirective = re.compile(r'^\s*\#')
-reDefine = re.compile('^\s*#\s*define\s+([A-Za-z_][A-Za-z_0-9]*)(\s+(.*))?$')
-reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)$')
-reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)$')
+reDefine = re.compile('^\s*#\s*define\s+([A-Za-z_][A-Za-z_0-9]*)(\s+(.*))?\s*$')
+reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reEndif = re.compile('^\s*#\s*endif\s*$')
 
 # Test if the line is a CPP directive, i.e., start with a #
@@ -62,6 +63,14 @@ class DefineToken(Token):
     def __str__(self):
         return '{0}({1}={2})'.format(Token.__str__(self), self.name, self.value)
 
+class UndefToken(Token):
+    def __init__(self, line, symbol):
+        Token.__init__(self, 'undef', line)
+        self.symbol = symbol
+
+    def __str__(self):
+        return '{0}({1})'.format(Token.__str__(self), self.symbol)
+
 class CppScanner:
     def __init__(self, data):
         self.rv = []
@@ -85,6 +94,11 @@ class CppScanner:
         match = reDefine.match(line)
         if match:
             self.t_define(match)
+
+        # Check for a #undef
+        match = reUndef.match(line)
+        if match:
+            self.t_undef(match)
 
         # Check for a #ifdef
         match = reIfdef.match(line)
@@ -116,4 +130,8 @@ class CppScanner:
         # Remember: m.group(2) includes the space separating name and value in
         #               #define NAME<space>VALUE
         t = DefineToken(self.currentLine, name=m.group(1), value=m.group(3))
+        self.rv.append(t)
+
+    def t_undef(self, m):
+        t = UndefToken(self.currentLine, symbol=m.group(1))
         self.rv.append(t)

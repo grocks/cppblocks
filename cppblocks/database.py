@@ -13,6 +13,9 @@ class Database:
         Database.validate(symbol)
         self.symbols[symbol] = value
 
+    def remove(self, symbol):
+        del self.symbols[symbol]
+
     def defined(self, symbol):
         return symbol in self.symbols
 

@@ -38,5 +38,15 @@ testCases = [
                   }
                 ],
             "input" : [ "input/03-nested-ifdefs.c", False, None, None, { 'BAR' : None } ]
+        },
+        {
+            "description" : "Nested ifdefs with undef works",
+            "expected" : [
+                  {
+                      "filepath" : "input/04-ifdef-with-undef.c",
+                      "disabledBlocks" : [ (9,3), (17,3) ]
+                  }
+                ],
+            "input" : [ "input/04-ifdef-with-undef.c", False, None, None, {} ]
         }
 ]
