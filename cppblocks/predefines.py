@@ -7,5 +7,5 @@ supports CPP macros.
 '''
 
 def importPredefinedSymbols(database, symbols):
-    for symbol in symbols:
+    for symbol in symbols.keys():
         database.add(symbol, symbols[symbol])

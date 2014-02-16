@@ -15,7 +15,6 @@ def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuo
     checkargs.check(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
 
     database = Database()
-
     importPredefinedSymbols(database, initialDefines)
 
     with open(filepath, 'r') as f:

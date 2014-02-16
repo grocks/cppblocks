@@ -7,6 +7,6 @@ testCases = [
                       "disabledBlocks" : []
                   }
                 ],
-            "input" : [ "input/empty.c", False, None, None, [] ]
+            "input" : [ "input/empty.c", False, None, None, {} ]
         }
 ]

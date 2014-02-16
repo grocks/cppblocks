@@ -54,7 +54,7 @@ if !exists('g:CppBlocks_include_dirs_quote')
 endif
 
 if !exists('g:CppBlocks_defines')
-  let g:CppBlocks_defines = []
+  let g:CppBlocks_defines = {}
 endif
 
 " Load python side: {{1
