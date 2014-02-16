@@ -6,24 +6,27 @@ the Spark framework.
 '''
 
 class DisabledBlocksCompiler:
-    def __init__(self, filepath, database, astRootNode):
+    def __init__(self, filepath, analyzeHeaders, database, fileFinderAngleInclude, fileFinderQuoteInclude, astRootNode):
         self.filepath = filepath
+        self.analyzeHeaders = analyzeHeaders
         self.symbols = database
+        self.fileFinderAngleInclude = fileFinderAngleInclude
+        self.fileFinderQuoteInclude = fileFinderQuoteInclude
         self.rootNode = astRootNode
-        self.disabledBlocks = []
+        self.disabledBlocks = { self.filepath : [] }
 
         self.visitorMap = {
                 'ifdef' : self.v_ifdef,
                 'ifndef' : self.v_ifndef,
                 'define' : self.v_define,
-                'undef' : self.v_undef
+                'undef' : self.v_undef,
+                'includeAngle' : self.v_includeAngle
         }
 
     def getDisabledBlocks(self):
         if self.rootNode:
             self.traversePreorder(self.rootNode)
-        return [ { 'filepath' : self.filepath,
-                   'disabledBlocks' : self.disabledBlocks } ]
+        return self.disabledBlocks
 
     def traversePreorder(self, node):
         visitChildren = self.visit(node)
@@ -59,5 +62,15 @@ class DisabledBlocksCompiler:
     def v_undef(self, node):
         self.symbols.remove(node.symbol)
 
+    def v_includeAngle(self, node):
+        from analyzer import analyzeFile
+        filepath = self.fileFinderAngleInclude.lookup(node.path)
+        disabledBlocks = analyzeFile(filepath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
+
+        if self.analyzeHeaders:
+            self.disabledBlocks.update(disabledBlocks)
+
     def addDisabledBlock(self, start, length):
-        self.disabledBlocks.append( (start,length) )
+        ' By convention the first entry in disabledBlocks is always for the file we were invoked on. '
+        self.disabledBlocks[self.filepath].append( (start,length) )
+

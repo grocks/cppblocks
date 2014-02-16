@@ -53,6 +53,11 @@ class astEndifNode(astNode):
     def __init__(self, line):
         astNode.__init__(self, 'endif', line)
 
+class astIncludeAngleNode(astNode):
+    def __init__(self, line, path):
+        astNode.__init__(self, 'includeAngle', line)
+        self.path = path
+
 
 class CppParser(GenericParser):
     def __init__(self, startToken='preprocessingFile'):
@@ -139,3 +144,10 @@ class CppParser(GenericParser):
         '''
         t = args[0]
         return astUndefNode(t.line, t.symbol)
+
+    def p_includeAngle(self, args):
+        '''
+            controlLine ::= includeAngle
+        '''
+        t = args[0]
+        return astIncludeAngleNode(self, t.path)

@@ -15,6 +15,7 @@ reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reEndif = re.compile('^\s*#\s*endif\s*$')
+reIncludeAngle = re.compile('^\s*#\s*include\s*<([^>]+)>\s*$')
 
 # Test if the line is a CPP directive, i.e., start with a #
 def isCppDirective(line):
@@ -71,6 +72,14 @@ class UndefToken(Token):
     def __str__(self):
         return '{0}({1})'.format(Token.__str__(self), self.symbol)
 
+class IncludeAngleToken(Token):
+    def __init__(self, line, path):
+        Token.__init__(self, 'includeAngle', line)
+        self.path = path
+
+    def __str__(self):
+        return '{0}({1})'.format(Token.__str__(self), self.path)
+
 class CppScanner:
     def __init__(self, data):
         self.rv = []
@@ -115,6 +124,11 @@ class CppScanner:
         if match:
             self.t_endif(match)
 
+        # Check for a #include <>
+        match = reIncludeAngle.match(line)
+        if match:
+            self.t_includeAngle(match)
+
     def t_ifdef(self, m):
         t = IfDefToken(self.currentLine, symbol=m.group(1))
         self.rv.append(t)
@@ -134,4 +148,8 @@ class CppScanner:
 
     def t_undef(self, m):
         t = UndefToken(self.currentLine, symbol=m.group(1))
+        self.rv.append(t)
+
+    def t_includeAngle(self, m):
+        t = IncludeAngleToken(self.currentLine, path=m.group(1))
         self.rv.append(t)

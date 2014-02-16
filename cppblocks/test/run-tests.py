@@ -5,6 +5,7 @@ This script runs all the tests in this test suite.
 
 import os
 import importlib
+import re
 import sys
 
 
@@ -16,8 +17,8 @@ sys.path.append(os.path.join(testDir, '../..'))
 
 import cppblocks
 
-#verbose = True
-verbose = False
+verbose = True
+#verbose = False
 
 # Print some progress information in case verbose mode is enabled
 def information(msg):
@@ -27,16 +28,18 @@ def information(msg):
 def runTestCase(testDir, test, name):
     filepath = os.path.join(testDir, test['input'][0])
     analyzeHeaders = test['input'][1]
-    includeDirsAngle = test['input'][2]
-    includeDirsQuote = test['input'][3]
+    includeDirsAngle = map(lambda path: os.path.join(testDir, path), test['input'][2])
+    includeDirsQuote = map(lambda path: os.path.join(testDir, path), test['input'][3])
     initialDefines = test['input'][4]
 
     disabledBlocks = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
     # Translate filepaths back to paths used in the tests
-    for block in disabledBlocks:
-        block['filepath'] = os.path.relpath(block['filepath'], testDir)
+    disabledBlocksRelPaths = {}
+    for filepath in disabledBlocks:
+        relPath = os.path.relpath(filepath, testDir)
+        disabledBlocksRelPaths[relPath] = disabledBlocks[filepath]
 
-    if test['expected'] != disabledBlocks:
+    if test['expected'] != disabledBlocksRelPaths:
         print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
 
 def runTestCases(testDir, testCase, name):
@@ -50,8 +53,13 @@ def runTest(testDir, name):
     testCase = importlib.import_module(name, testDir)
     runTestCases(testDir, testCase, name)
 
+# Provide default criteria if the user did not provide a match pattern.
+if len(sys.argv) == 1:
+    sys.argv.append('.')
+
 # Iterate over all directories containing a test and execute them
 for name in os.listdir(testDir):
     testCasePath = os.path.join(testDir, name)
     if os.path.isdir(testCasePath):
-        runTest(testCasePath, name)
+        if re.search(sys.argv[1], testCasePath):
+            runTest(testCasePath, name)
