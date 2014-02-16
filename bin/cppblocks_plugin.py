@@ -33,5 +33,6 @@ def highlightAllDisabledCppBlocks(disabledBlocksInAllFiles):
 
 def highlightDisabledCppBlocks(disabledBlocks):
     filepath = disabledBlocks['filepath']
+    vim.command('syntax clear CppBlocks_DisabledBlocks')
     for block in disabledBlocks['disabledBlocks']:
-        vim.command(r'syntax region Comment start=/\%{0}l/ end=/\%{1}l/'.format(block[0], block[0]+block[1]))
+        vim.command(r'syntax region CppBlocks_DisabledBlocks start=/\%{0}l/ end=/\%{1}l/'.format(block[0], block[0]+block[1]))

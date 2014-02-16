@@ -57,7 +57,10 @@ if !exists('g:CppBlocks_defines')
   let g:CppBlocks_defines = {}
 endif
 
-" Load python side: {{1
+" Setup default highlight for disabled CPP blocks
+highlight default link CppBlocks_DisabledBlocks Comment
+
+" Load python side
 python import sys
 exe 'python sys.path.append("' . g:CppBlocks_library_path . '")'
 exe 'python sys.path.append("' . g:CppBlocks_python_path . '")'
@@ -66,6 +69,16 @@ python import cppblocks_plugin
 " Private Functions: {{{1
 function! s:MarkDisabledCppBlocks()
   python cppblocks_plugin.markDisabledCppBlocks()
+endfunction
+
+function! s:CppBlocksDefineCppSymbol(symbol, ...)
+  if a:0 == 1
+    let g:CppBlocks_defines[ a:symbol ] = a:value
+  elseif a:0 == 0
+    let g:CppBlocks_defines[ a:symbol ] = ''
+  else
+    echohl ErrorMsg | echo "Invalid number of arguments!" | echohl None
+  endif
 endfunction
 
 " Public Interface: {{{1
@@ -87,7 +100,7 @@ endif
 
 " Commands: {{{1
 command! -nargs=0 -bar CppBlocks call <SID>MarkDisabledCppBlocks()
-command! -nargs=0 -bar MyCommand2 call MyPublicFunction()
+command! -nargs=+ -complete=tag_listfiles -bar Define call <SID>CppBlocksDefineCppSymbol(<f-args>)
 
 " Teardown: {{{1
 " reset &cpo back to users setting
