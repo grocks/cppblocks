@@ -20,7 +20,8 @@ class DisabledBlocksCompiler:
                 'ifndef' : self.v_ifndef,
                 'define' : self.v_define,
                 'undef' : self.v_undef,
-                'includeAngle' : self.v_includeAngle
+                'includeAngle' : self.v_includeAngle,
+                'includeQuote' : self.v_includeQuote
         }
 
     def getDisabledBlocks(self):
@@ -63,9 +64,17 @@ class DisabledBlocksCompiler:
         self.symbols.remove(node.symbol)
 
     def v_includeAngle(self, node):
+        includePath = self.fileFinderAngleInclude.lookup(node.path)
+        self.v_include(includePath)
+
+    def v_includeQuote(self, node):
+        includePath = self.fileFinderQuoteInclude.lookup(self.filepath, node.path)
+        self.v_include(includePath)
+
+    def v_include(self, includePath):
+        # Be careful with this cyclic import. See http://stackoverflow.com/questions/11698530/two-python-modules-require-each-others-contents-can-that-work
         from analyzer import analyzeFile
-        filepath = self.fileFinderAngleInclude.lookup(node.path)
-        disabledBlocks = analyzeFile(filepath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
+        disabledBlocks = analyzeFile(includePath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
 
         if self.analyzeHeaders:
             self.disabledBlocks.update(disabledBlocks)

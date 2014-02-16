@@ -59,6 +59,11 @@ class astIncludeAngleNode(astNode):
         self.path = path
 
 
+class astIncludeQuoteNode(astNode):
+    def __init__(self, line, path):
+        astNode.__init__(self, 'includeQuote', line)
+        self.path = path
+
 class CppParser(GenericParser):
     def __init__(self, startToken='preprocessingFile'):
         GenericParser.__init__(self, startToken)
@@ -151,3 +156,10 @@ class CppParser(GenericParser):
         '''
         t = args[0]
         return astIncludeAngleNode(self, t.path)
+
+    def p_includeQuote(self, args):
+        '''
+            controlLine ::= includeQuote
+        '''
+        t = args[0]
+        return astIncludeQuoteNode(self, t.path)

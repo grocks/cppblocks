@@ -2,7 +2,7 @@
 The class FileFinder manages a list of paths and performs file lookups among them.
 '''
 
-from os.path import join as pathJoin, exists as pathExists, realpath
+from os.path import join as pathJoin, exists as pathExists, realpath, dirname
 
 from messages import FileNotFound
 
@@ -14,7 +14,7 @@ class FileFinder:
         candidates = map(lambda stem: pathJoin(stem, path), self.pathList)
 
         for candidate in candidates:
-            if (pathExists(candidate)):
+            if pathExists(candidate):
                 return candidate
 
         raise FileNotFound(path)
@@ -28,3 +28,14 @@ class FileFinder:
     def dropFirstPath(self, path):
         ' Remove the path with highest priority during lookup. '
         del self.pathList[0]
+
+class CurDirFileFinder(FileFinder):
+    def __init__(self, pathList):
+        FileFinder.__init__(self, pathList)
+        self.currentDir = None
+
+    def lookup(self, curDirFilePath, path):
+        candidate = pathJoin(dirname(curDirFilePath), path)
+        if pathExists(candidate):
+            return candidate
+        return FileFinder.lookup(self, path)
