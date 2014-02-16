@@ -71,14 +71,27 @@ function! s:MarkDisabledCppBlocks()
   python cppblocks_plugin.markDisabledCppBlocks()
 endfunction
 
-function! s:CppBlocksDefineCppSymbol(symbol, ...)
+function! s:DefineCppSymbol(symbol, ...)
   if a:0 == 1
-    let g:CppBlocks_defines[ a:symbol ] = a:value
+    let g:CppBlocks_defines[ a:symbol ] = a:1
   elseif a:0 == 0
     let g:CppBlocks_defines[ a:symbol ] = ''
   else
     echohl ErrorMsg | echo "Invalid number of arguments!" | echohl None
   endif
+endfunction
+
+function! s:UndefineCppSymbol(symbol)
+  call remove(g:CppBlocks_defines, a:symbol)
+endfunction
+
+function! s:CompleteKnownSymbols(ArgLead, CmdLine, CursorPos)
+  return join(keys(g:CppBlocks_defines), "\n")
+endfunction
+
+function! s:ListCppSymbols()
+  let symbolList = join(values(map(copy(g:CppBlocks_defines), 'v:key . " -> " . v:val')), "\n")
+  echo symbolList
 endfunction
 
 " Public Interface: {{{1
@@ -100,7 +113,9 @@ endif
 
 " Commands: {{{1
 command! -nargs=0 -bar CppBlocks call <SID>MarkDisabledCppBlocks()
-command! -nargs=+ -complete=tag_listfiles -bar Define call <SID>CppBlocksDefineCppSymbol(<f-args>)
+command! -nargs=+ -complete=tag_listfiles -bar Define call <SID>DefineCppSymbol(<f-args>)
+command! -nargs=1 -complete=custom,<SID>CompleteKnownSymbols -bar Undefine call <SID>UndefineCppSymbol(<f-args>)
+command! -nargs=0 -bar ListDefined call <SID>ListCppSymbols()
 
 " Teardown: {{{1
 " reset &cpo back to users setting
