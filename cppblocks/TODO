@@ -4,3 +4,4 @@
 * Make :commands in Vim plugins optional
 * Rename symbols/database variables to symdb
 * Test analyzeHeaders set to TRUE
+* Support octal/hexadecimal constants

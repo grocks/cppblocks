@@ -49,6 +49,12 @@ class astIfndefNode(astNode):
         self.symbol = symbol
         self.length = line
 
+class astIfNode(astNode):
+    def __init__(self, line, expression):
+        astNode.__init__(self, 'if', line)
+        self.expression = expression
+        self.length = line
+
 class astEndifNode(astNode):
     def __init__(self, line):
         astNode.__init__(self, 'endif', line)
@@ -135,6 +141,13 @@ class CppParser(GenericParser):
         '''
         t = args[0]
         return astIfndefNode(t.line, t.symbol)
+
+    def p_if(self, args):
+        '''
+            ifGroup ::= if
+        '''
+        t = args[0]
+        return astIfNode(t.line, t.expression)
 
     def p_define(self, args):
         '''

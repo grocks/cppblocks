@@ -18,6 +18,7 @@ class DisabledBlocksCompiler:
         self.visitorMap = {
                 'ifdef' : self.v_ifdef,
                 'ifndef' : self.v_ifndef,
+                'if' : self.v_if,
                 'define' : self.v_define,
                 'undef' : self.v_undef,
                 'includeAngle' : self.v_includeAngle,
@@ -53,6 +54,17 @@ class DisabledBlocksCompiler:
 
     def v_ifndef(self, node):
         if self.symbols.defined(node.symbol):
+            self.addDisabledBlock(node.line, node.length)
+            return False
+        return True
+
+    def v_if(self, node):
+        if node.expression[0].isdigit():
+            expr = node.expression
+        else:
+            expr = self.symbols.getValue(node.expression)
+
+        if (0 == int(expr) ):
             self.addDisabledBlock(node.line, node.length)
             return False
         return True

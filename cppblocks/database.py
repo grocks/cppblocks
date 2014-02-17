@@ -19,17 +19,24 @@ class Database:
     def defined(self, symbol):
         return symbol in self.symbols
 
-    def getValue(self, symbol, implicit=False):
-        '''Return value of a symbol.
+    def getValue(self, symbol, recursive=True):
+        '''Return the fully expanded value of a symbol.
 
-        Provides the possibility to implicitly create not-existing symbols.
+        Lookup the value of 'symbol'. Perform recursive lookups if the symbol is mapped to another symbol.
         '''
         if not self.defined(symbol):
-            if not implicit:
-                raise UndefinedSymbol(symbol)
+            # Undefined symbols evaluate to zero according to the C standard
+            return 0
+        else:
+            # Test if the symbol evaluates to a numberic value or to another symbol
+            value = self.symbols[symbol]
+            if len(value) and value[0].isdigit():
+                return value
+            elif len(value) and recursive:
+                return self.getValue(value, recursive)
             else:
-                self.add(symbol)
-        return self.symbols[symbol]
+                # Symbols with 'empty' value are handled in this case (return value is the empty string '')
+                return self.symbols[symbol]
 
     @staticmethod
     def isValidCppToken(token):

@@ -14,6 +14,7 @@ reDefine = re.compile('^\s*#\s*define\s+([A-Za-z_][A-Za-z_0-9]*)(\s+(.*))?\s*$')
 reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIf = re.compile('^\s*#\s*if\s+(([A-Za-z_][A-Za-z_0-9]*)|([0-9]+))\s*$')
 reEndif = re.compile('^\s*#\s*endif\s*$')
 reIncludeAngle = re.compile('^\s*#\s*include\s*<([^>]+)>\s*$')
 reIncludeQuote = re.compile('^\s*#\s*include\s*"([^"]+)"\s*$')
@@ -51,6 +52,14 @@ class IfnDefToken(Token):
 
     def __str__(self):
         return '{0}({1})'.format(Token.__str__(self), self.symbol)
+
+class IfToken(Token):
+    def __init__(self, line, expression):
+        Token.__init__(self, 'if', line)
+        self.expression = expression
+
+    def __str__(self):
+        return '{0}({1})'.format(Token.__str__(self), self.expression)
 
 class EndIfToken(Token):
     def __init__(self, line):
@@ -128,6 +137,11 @@ class CppScanner:
         if match:
             self.t_ifndef(match)
 
+        # Check for a #if
+        match = reIf.match(line)
+        if match:
+            self.t_if(match)
+
         # Check for a #endif
         match = reEndif.match(line)
         if match:
@@ -149,6 +163,10 @@ class CppScanner:
 
     def t_ifndef(self, m):
         t = IfnDefToken(self.currentLine, symbol=m.group(1))
+        self.rv.append(t)
+
+    def t_if(self, m):
+        t = IfToken(self.currentLine, expression=m.group(1))
         self.rv.append(t)
 
     def t_endif(self, m):
