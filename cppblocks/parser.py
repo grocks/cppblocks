@@ -41,19 +41,19 @@ class astIfdefNode(astNode):
     def __init__(self, line, symbol):
         astNode.__init__(self, 'ifdef', line)
         self.symbol = symbol
-        self.length = line
+        self.length = 0
 
 class astIfndefNode(astNode):
     def __init__(self, line, symbol):
         astNode.__init__(self, 'ifndef', line)
         self.symbol = symbol
-        self.length = line
+        self.length = 0
 
 class astIfNode(astNode):
     def __init__(self, line, expression):
         astNode.__init__(self, 'if', line)
         self.expression = expression
-        self.length = line
+        self.length = 0
 
 class astEndifNode(astNode):
     def __init__(self, line):
@@ -109,45 +109,45 @@ class CppParser(GenericParser):
 
     def p_nestedIfSection(self, args):
         '''
-            ifSection ::= ifGroup group endif
-        '''
-        # Can also be an ifndef node
-        astIfdefNode = args[0]
-        endifToken = args[2]
-        astIfdefNode.length = endifToken.line - astIfdefNode.line + 1
-        astIfdefNode.children.append(args[1])
-        return astIfdefNode
-
-    def p_leafIfSection(self, args):
-        '''
             ifSection ::= ifGroup endif
         '''
-        # Can also be an ifndef node
-        astIfdefNode = args[0]
+        ifGroupNode = args[0]
         endifToken = args[1]
-        astIfdefNode.length = endifToken.line - astIfdefNode.line + 1
-        return astIfdefNode
+        ifGroupNode.length = endifToken.line - ifGroupNode.line + 1
+        return ifGroupNode
 
     def p_ifdef(self, args):
         '''
+            ifGroup ::= ifdef group
             ifGroup ::= ifdef
         '''
         t = args[0]
-        return astIfdefNode(t.line, t.symbol)
+        ifdefNode = astIfdefNode(t.line, t.symbol)
+        if len(args) == 2:
+            ifdefNode.children.append(args[1])
+        return ifdefNode
 
     def p_ifndef(self, args):
         '''
+            ifGroup ::= ifndef group
             ifGroup ::= ifndef
         '''
         t = args[0]
-        return astIfndefNode(t.line, t.symbol)
+        ifndefNode = astIfndefNode(t.line, t.symbol)
+        if len(args) == 2:
+            ifndefNode.children.append(args[1])
+        return ifndefNode
 
     def p_if(self, args):
         '''
+            ifGroup ::= if group
             ifGroup ::= if
         '''
         t = args[0]
-        return astIfNode(t.line, t.expression)
+        ifNode = astIfNode(t.line, t.expression)
+        if len(args) == 2:
+            ifNode.children.append(args[1])
+        return ifNode
 
     def p_define(self, args):
         '''
