@@ -58,8 +58,12 @@ if len(sys.argv) == 1:
     sys.argv.append('.')
 
 # Iterate over all directories containing a test and execute them
-for name in os.listdir(testDir):
-    testCasePath = os.path.join(testDir, name)
-    if os.path.isdir(testCasePath):
-        if re.search(sys.argv[1], testCasePath):
-            runTest(testCasePath, name)
+tests = os.listdir(testDir)
+if len(tests) is 0:
+    print "No tests found!"
+else:
+    for testName in tests:
+        testCasePath = os.path.join(testDir, testName)
+        if os.path.isdir(testCasePath):
+            if re.search(sys.argv[1], testCasePath):
+                runTest(testCasePath, testName)
