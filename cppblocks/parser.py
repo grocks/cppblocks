@@ -55,9 +55,23 @@ class astIfNode(astNode):
         self.expression = expression
         self.length = 0
 
+class astElseNode(astNode):
+    def __init__(self, line):
+        astNode.__init__(self, 'else', line)
+        self.length = 0
+
 class astEndifNode(astNode):
     def __init__(self, line):
         astNode.__init__(self, 'endif', line)
+
+class astIfSection(astNode):
+    def __init__(self, ifGroup, elifGroups=None, elseGroup=None):
+        astNode.__init__(self, 'ifSection', line=ifGroup.line)
+        self.ifGroup = ifGroup
+        self.elifGroups = elifGroups or []
+        self.elseGroup = elseGroup or []
+        # XXX: remove this once proper ifSection handling is implemented in compiler.py
+        self.children.append(ifGroup)
 
 class astIncludeAngleNode(astNode):
     def __init__(self, line, path):
@@ -107,14 +121,14 @@ class CppParser(GenericParser):
         '''
         return args[0]
 
-    def p_nestedIfSection(self, args):
+    def p_simpleIfSection(self, args):
         '''
             ifSection ::= ifGroup endif
         '''
         ifGroupNode = args[0]
         endifToken = args[1]
         ifGroupNode.length = endifToken.line - ifGroupNode.line + 1
-        return ifGroupNode
+        return astIfSection(ifGroupNode)
 
     def p_ifdef(self, args):
         '''

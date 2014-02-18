@@ -16,6 +16,7 @@ class DisabledBlocksCompiler:
         self.disabledBlocks = { self.filepath : [] }
 
         self.visitorMap = {
+                'ifSection' : self.v_ifSection,
                 'ifdef' : self.v_ifdef,
                 'ifndef' : self.v_ifndef,
                 'if' : self.v_if,
@@ -67,6 +68,10 @@ class DisabledBlocksCompiler:
         if (0 == int(expr) ):
             self.addDisabledBlock(node.line, node.length)
             return False
+        return True
+
+    def v_ifSection(self, node):
+        # For now always decend and process children
         return True
 
     def v_define(self, node):
