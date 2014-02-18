@@ -34,11 +34,11 @@ endif
 
 " Options: {{{1
 if !exists('g:CppBlocks_library_path')
-  let g:CppBlocks_library_path = expand('%:h:p') . '/..'
+  let g:CppBlocks_library_path = expand('<sfile>:h:p') . '/..'
 endif
 
 if !exists('g:CppBlocks_python_path')
-  let g:CppBlocks_python_path = expand('%:h:p')
+  let g:CppBlocks_python_path = expand('<sfile>:h:p')
 endif
 
 if !exists('g:CppBlocks_analyze_headers')
