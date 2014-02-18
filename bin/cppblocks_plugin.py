@@ -23,16 +23,15 @@ def markDisabledCppBlocks():
     initialDefines = vim.vars["CppBlocks_defines"]
 
     #vim.vars["disabledBlocks"] = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
-    disabledBlocksInAllFiles = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
+    disabledBlocks = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
 
-    highlightAllDisabledCppBlocks(disabledBlocksInAllFiles)
+    highlightAllDisabledCppBlocks(disabledBlocks)
 
-def highlightAllDisabledCppBlocks(disabledBlocksInAllFiles):
-    for disabledBlocksInFile in disabledBlocksInAllFiles:
+def highlightAllDisabledCppBlocks(disabledBlocks):
+    for disabledBlocksInFile in disabledBlocks.itervalues():
         highlightDisabledCppBlocks(disabledBlocksInFile)
 
 def highlightDisabledCppBlocks(disabledBlocks):
-    filepath = disabledBlocks['filepath']
     vim.command('syntax clear CppBlocks_DisabledBlocks')
-    for block in disabledBlocks['disabledBlocks']:
+    for block in disabledBlocks:
         vim.command(r'syntax region CppBlocks_DisabledBlocks start=/\%{0}l/ end=/\%{1}l/'.format(block[0], block[0]+block[1]))
