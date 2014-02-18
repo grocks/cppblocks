@@ -32,11 +32,17 @@ class DisabledBlocksCompiler:
         return self.disabledBlocks
 
     def traversePreorder(self, node):
+        children = []
+
         visitChildren = self.visit(node)
 
-        if visitChildren:
-            for child in node.children:
-                self.traversePreorder(child)
+        if type(visitChildren) is list:
+            children = visitChildren # Visitor returned a list of children to process
+        elif visitChildren: # Visitor wants to visit its children
+            children = node.children
+
+        for child in children:
+            self.traversePreorder(child)
 
         for sibling in node.siblings:
             self.traversePreorder(sibling)
@@ -48,16 +54,10 @@ class DisabledBlocksCompiler:
         return visitor(node)
 
     def v_ifdef(self, node):
-        if not self.symbols.defined(node.symbol):
-            self.addDisabledBlock(node.line, node.length)
-            return False
-        return True
+        return self.symbols.defined(node.symbol)
 
     def v_ifndef(self, node):
-        if self.symbols.defined(node.symbol):
-            self.addDisabledBlock(node.line, node.length)
-            return False
-        return True
+        return not self.symbols.defined(node.symbol)
 
     def v_if(self, node):
         if node.expression[0].isdigit():
@@ -65,14 +65,20 @@ class DisabledBlocksCompiler:
         else:
             expr = self.symbols.getValue(node.expression)
 
-        if (0 == int(expr) ):
-            self.addDisabledBlock(node.line, node.length)
-            return False
-        return True
+        return int(expr)
 
     def v_ifSection(self, node):
-        # For now always decend and process children
-        return True
+        ifCondResult = self.visit(node.ifGroup)
+        if ifCondResult:
+            if node.elseGroup:
+                self.addDisabledBlock(node.elseGroup.line, node.elseGroup.length)
+            return node.ifGroup.children
+        else:
+            self.addDisabledBlock(node.ifGroup.line, node.ifGroup.length)
+            if node.elseGroup:
+                return node.elseGroup.children
+        # Never visit any children of v_ifSection unless we explicitly return a list of children
+        return False
 
     def v_define(self, node):
         self.symbols.add(node.name, node.value)

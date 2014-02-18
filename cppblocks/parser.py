@@ -69,9 +69,11 @@ class astIfSection(astNode):
         astNode.__init__(self, 'ifSection', line=ifGroup.line)
         self.ifGroup = ifGroup
         self.elifGroups = elifGroups or []
-        self.elseGroup = elseGroup or []
+        self.elseGroup = elseGroup
         # XXX: remove this once proper ifSection handling is implemented in compiler.py
         self.children.append(ifGroup)
+        if elseGroup:
+            self.children.append(elseGroup)
 
 class astIncludeAngleNode(astNode):
     def __init__(self, line, path):
@@ -130,6 +132,22 @@ class CppParser(GenericParser):
         ifGroupNode.length = endifToken.line - ifGroupNode.line + 1
         return astIfSection(ifGroupNode)
 
+    def p_ifElseSection(self, args):
+        '''
+            ifSection ::= ifGroup elseGroup endif
+        '''
+        ifGroupNode = args[0]
+        elseGroupNode = args[1]
+        endifToken = args[2]
+        # We do not want to include the #else/#endif in
+        # the disabled block region. Therefore wo don't add one in this case,
+        # we don't want to include the #else line in the disabled block.
+        # (It wouldn't look right.)
+        ifGroupNode.length = elseGroupNode.line - ifGroupNode.line
+        elseGroupNode.length = endifToken.line - elseGroupNode.line
+        return astIfSection(ifGroupNode,elseGroup=elseGroupNode)
+
+
     def p_ifdef(self, args):
         '''
             ifGroup ::= ifdef group
@@ -162,6 +180,16 @@ class CppParser(GenericParser):
         if len(args) == 2:
             ifNode.children.append(args[1])
         return ifNode
+
+    def p_elseGroup(self, args):
+        '''
+            elseGroup ::= else group
+            elseGroup ::= else
+        '''
+        elseNode = astElseNode(args[0].line)
+        if len(args) == 2:
+            elseNode.children.append(args[1])
+        return elseNode
 
     def p_define(self, args):
         '''

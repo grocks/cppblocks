@@ -15,6 +15,7 @@ reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIf = re.compile('^\s*#\s*if\s+(([A-Za-z_][A-Za-z_0-9]*)|([0-9]+))\s*$')
+reElse = re.compile('^\s*#\s*else\s*$')
 reEndif = re.compile('^\s*#\s*endif\s*$')
 reIncludeAngle = re.compile('^\s*#\s*include\s*<([^>]+)>\s*$')
 reIncludeQuote = re.compile('^\s*#\s*include\s*"([^"]+)"\s*$')
@@ -60,6 +61,10 @@ class IfToken(Token):
 
     def __str__(self):
         return '{0}({1})'.format(Token.__str__(self), self.expression)
+
+class ElseToken(Token):
+    def __init__(self, line):
+        Token.__init__(self, 'else', line)
 
 class EndIfToken(Token):
     def __init__(self, line):
@@ -142,6 +147,11 @@ class CppScanner:
         if match:
             self.t_if(match)
 
+        # Check for a #else
+        match = reElse.match(line)
+        if match:
+            self.t_else(match)
+
         # Check for a #endif
         match = reEndif.match(line)
         if match:
@@ -167,6 +177,10 @@ class CppScanner:
 
     def t_if(self, m):
         t = IfToken(self.currentLine, expression=m.group(1))
+        self.rv.append(t)
+
+    def t_else(self, m):
+        t = ElseToken(self.currentLine)
         self.rv.append(t)
 
     def t_endif(self, m):
