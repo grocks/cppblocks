@@ -182,6 +182,9 @@ class GenericParser:
 		fn = func
 		rules = string.split(doc)
 
+                if not '::=' in rules:
+                    print "Warning: rule '{0}' of action '{1}' does not contain ::= operator".format(doc.strip(), func.__name__)
+
 		index = []
 		for i in range(len(rules)):
 			if rules[i] == '::=':
