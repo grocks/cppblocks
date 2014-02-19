@@ -15,6 +15,7 @@ reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
 reIf = re.compile('^\s*#\s*if\s+(([A-Za-z_][A-Za-z_0-9]*)|([0-9]+))\s*$')
+reElif = re.compile('^\s*#\s*elif\s+(([A-Za-z_][A-Za-z_0-9]*)|([0-9]+))\s*$')
 reElse = re.compile('^\s*#\s*else\s*$')
 reEndif = re.compile('^\s*#\s*endif\s*$')
 reIncludeAngle = re.compile('^\s*#\s*include\s*<([^>]+)>\s*$')
@@ -57,6 +58,14 @@ class IfnDefToken(Token):
 class IfToken(Token):
     def __init__(self, line, expression):
         Token.__init__(self, 'if', line)
+        self.expression = expression
+
+    def __str__(self):
+        return '{0}({1})'.format(Token.__str__(self), self.expression)
+
+class ElifToken(Token):
+    def __init__(self, line, expression):
+        Token.__init__(self, 'elif', line)
         self.expression = expression
 
     def __str__(self):
@@ -147,6 +156,11 @@ class CppScanner:
         if match:
             self.t_if(match)
 
+        # Check for a #elif
+        match = reElif.match(line)
+        if match:
+            self.t_elif(match)
+
         # Check for a #else
         match = reElse.match(line)
         if match:
@@ -177,6 +191,10 @@ class CppScanner:
 
     def t_if(self, m):
         t = IfToken(self.currentLine, expression=m.group(1))
+        self.rv.append(t)
+
+    def t_elif(self, m):
+        t = ElifToken(self.currentLine, expression=m.group(1))
         self.rv.append(t)
 
     def t_else(self, m):

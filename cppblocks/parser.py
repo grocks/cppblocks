@@ -55,6 +55,12 @@ class astIfNode(astNode):
         self.expression = expression
         self.length = 0
 
+class astElifNode(astNode):
+    def __init__(self, line, expression):
+        astNode.__init__(self, 'elif', line)
+        self.expression = expression
+        self.length = 0
+
 class astElseNode(astNode):
     def __init__(self, line):
         astNode.__init__(self, 'else', line)
@@ -70,8 +76,12 @@ class astIfSection(astNode):
         self.ifGroup = ifGroup
         self.elifGroups = elifGroups or []
         self.elseGroup = elseGroup
-        # XXX: remove this once proper ifSection handling is implemented in compiler.py
+        # We populate the children attribute, because it's used by the
+        # __str__()/__repr__() methods of the base class, which are useful for
+        # debugging.
         self.children.append(ifGroup)
+        if elifGroups:
+            self.children.extend(elifGroups)
         if elseGroup:
             self.children.append(elseGroup)
 
@@ -147,6 +157,15 @@ class CppParser(GenericParser):
         elseGroupNode.length = endifToken.line - elseGroupNode.line
         return astIfSection(ifGroupNode,elseGroup=elseGroupNode)
 
+    def p_ifElifSection(self, args):
+        '''
+            ifSection ::= ifGroup elifGroups endif
+        '''
+        ifGroupNode = args[0]
+        elifGroupNodes = args[1]
+        endifToken = args[2]
+        ifGroupNode.length = elifGroupNodes[0].line - ifGroupNode.line + 1
+        return astIfSection(ifGroupNode,elifGroups=elifGroupNodes)
 
     def p_ifdef(self, args):
         '''
@@ -180,6 +199,33 @@ class CppParser(GenericParser):
         if len(args) == 2:
             ifNode.children.append(args[1])
         return ifNode
+
+    def p_elifGroups(self, args):
+        '''
+            elifGroups ::= elifGroups elifGroup
+        '''
+        elifGroups = args[0]
+        t = args[1]
+        elifGroups.append(astElifNode(t.line, t.expression))
+        return elifGroups
+
+    def p_singleElifGroup(self, args):
+        '''
+            elifGroups ::= elifGroup
+        '''
+        elifGroups = [ args[0] ]
+        return elifGroups
+
+    def p_elifGroup(self, args):
+        '''
+            elifGroup ::= elif group
+            elifGroup ::= elif
+        '''
+        t = args[0]
+        elifNode = astElifNode(t.line, t.expression)
+        if len(args) == 2:
+            elifNode.children.append(args[1])
+        return elifNode
 
     def p_elseGroup(self, args):
         '''
