@@ -120,10 +120,14 @@ class DisabledBlocksCompiler:
             # elif blocks preceeding it and all the elif block following it.
             # We exploit Python's very convenient array slicing semantics to
             # avoid tricky special case handling here.
+            # Note: n:-1 does not yield the same slice as n:len(a_list)! The
+            # former returns an empty list if n == len(a_list)-1, while the
+            # later returns the last element in the list.
             if elifExprResult:
                 self.disableElifGroups(elifGroups[0:idx])
-                self.disableElifGroups(elifGroups[idx+1:-1])
+                self.disableElifGroups(elifGroups[idx+1:len(elifGroups)])
                 return elifNode.children # No point to continue the evaluation of elif conditions
+            idx += 1
         # If we reach this statement, all elif conditions evaluated to false
         self.disableElifGroups(elifGroups)
         return False
