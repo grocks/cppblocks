@@ -28,21 +28,24 @@ def information(msg):
         print msg
 
 def runTestCase(testDir, test, name):
-    filepath = os.path.join(testDir, test['input'][0])
-    analyzeHeaders = test['input'][1]
-    includeDirsAngle = map(lambda path: os.path.join(testDir, path), test['input'][2])
-    includeDirsQuote = map(lambda path: os.path.join(testDir, path), test['input'][3])
-    initialDefines = test['input'][4]
+    try:
+        filepath = os.path.join(testDir, test['input'][0])
+        analyzeHeaders = test['input'][1]
+        includeDirsAngle = map(lambda path: os.path.join(testDir, path), test['input'][2])
+        includeDirsQuote = map(lambda path: os.path.join(testDir, path), test['input'][3])
+        initialDefines = test['input'][4]
 
-    disabledBlocks = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
-    # Translate filepaths back to paths used in the tests
-    disabledBlocksRelPaths = {}
-    for filepath in disabledBlocks:
-        relPath = os.path.relpath(filepath, testDir)
-        disabledBlocksRelPaths[relPath] = disabledBlocks[filepath]
+        disabledBlocks = cppblocks.getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuote, initialDefines)
+        # Translate filepaths back to paths used in the tests
+        disabledBlocksRelPaths = {}
+        for filepath in disabledBlocks:
+            relPath = os.path.relpath(filepath, testDir)
+            disabledBlocksRelPaths[relPath] = disabledBlocks[filepath]
 
-    if test['expected'] != disabledBlocksRelPaths:
-        print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
+        if test['expected'] != disabledBlocksRelPaths:
+            print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
+    except:
+        print "Test {0}: '{1}' failed!\n".format(name, test['description'])
 
     global testCounter
     testCounter += 1
