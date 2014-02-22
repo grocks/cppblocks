@@ -18,3 +18,19 @@ int b = 3;
 
 int c = 4;
 #endif
+
+#if 0
+
+int a = 3;
+
+#elif defined FOOBAR
+
+int b = 3;
+
+#elif defined BAR
+
+int c = 4
+
+
+
+#endif

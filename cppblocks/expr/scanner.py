@@ -10,7 +10,10 @@ class Token:
         self.value = value
 
     def __str__(self):
-        return "{0}({1})".format(self.typ, self.value)
+        if self.value:
+            return "{0}({1})".format(self.typ, self.value)
+        else:
+            return self.typ
 
     def __repr__(self):
         return self.__str__()
@@ -28,16 +31,28 @@ class ExprScanner(GenericScanner):
         return self.rv
 
     def t_defined(self, s):
-        r'defined'
-        self.rv.append(Token('defined', s))
+        r'\bdefined\b'
+        self.rv.append(Token('defined'))
 
     def t_constant(self, s):
         r'[0-9]+'
         self.rv.append(Token('number', s))
 
     def t_symbol(self, s):
-        r'\b[A-Za-z_][A-Za-z_0-9]*'
+        r'\b[A-Za-z_][A-Za-z_0-9]*\b'
         self.rv.append(Token('symbol', s))
+
+    def t_equality(self, s):
+        r'=='
+        self.rv.append(Token('=='))
+
+    def t_inequality(self, s):
+        r'!='
+        self.rv.append(Token('!='))
+
+    def t_not(self, s):
+        r'!'
+        self.rv.append(Token('!'))
 
     def t_space(self, s):
         r'\s+'
