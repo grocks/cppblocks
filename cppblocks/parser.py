@@ -164,8 +164,41 @@ class CppParser(GenericParser):
         ifGroupNode = args[0]
         elifGroupNodes = args[1]
         endifToken = args[2]
-        ifGroupNode.length = elifGroupNodes[0].line - ifGroupNode.line + 1
+
+        self.computeIfElifBlockLengths(ifGroupNode, elifGroupNodes, endifToken)
+
         return astIfSection(ifGroupNode,elifGroups=elifGroupNodes)
+
+    def p_ifElifElseSection(self, args):
+        '''
+            ifSection ::= ifGroup elifGroups elseGroup endif
+        '''
+        ifGroupNode = args[0]
+        elifGroupNodes = args[1]
+        elseGroupNode = args[2]
+        endifToken = args[3]
+
+        self.computeIfElifBlockLengths(ifGroupNode, elifGroupNodes, elseGroupNode)
+
+        # Now we simply process the elseGroup and add it to the ifSection
+        elseGroupNode.length = endifToken.line - elseGroupNode.line
+
+        return astIfSection(ifGroupNode, elifGroups=elifGroupNodes, elseGroup=elseGroupNode)
+
+    def computeIfElifBlockLengths(self, ifGroupNode, elifGroupNodes, astElseNode_or_elifToken):
+        # Calculate the block lengths of the if group and all elif groups. We
+        # do not add +1, because we do not want to include the #elif/#endif
+        # following an if/elif group
+
+        # Compute length of if group
+        ifGroupNode.length = elifGroupNodes[0].line - ifGroupNode.line
+
+        # Compute length of elif groups
+        nextNode = astElseNode_or_elifToken
+        for elifGroup in reversed(elifGroupNodes):
+            elifGroup.length = nextNode.line - elifGroup.line
+            nextNode = elifGroup
+
 
     def p_ifdef(self, args):
         '''
