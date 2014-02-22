@@ -54,6 +54,14 @@ class ExprScanner(GenericScanner):
         r'!'
         self.rv.append(Token('!'))
 
+    def t_lparen(self, s):
+        r'\('
+        self.rv.append(Token('('))
+
+    def t_rparen(self, s):
+        r'\)'
+        self.rv.append(Token(')'))
+
     def t_space(self, s):
         r'\s+'
         pass # discard space

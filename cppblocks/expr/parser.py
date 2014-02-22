@@ -59,7 +59,7 @@ class ExprParser(GenericParser):
 
     def p_defined(self, args):
         '''
-            expr ::= defined symbol
+            expr ::= defined expr
         '''
         t = args[1]
         return astNode('defined', t.value)
@@ -69,6 +69,12 @@ class ExprParser(GenericParser):
             expr ::= ! expr
         '''
         return astNotNode(expr=args[1])
+
+    def p_parenthesizedExpression(self, args):
+        '''
+            expr ::= ( expr )
+        '''
+        return args[1]
 
     def p_equality(self, args):
         '''
