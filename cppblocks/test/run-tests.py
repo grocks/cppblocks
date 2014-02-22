@@ -20,6 +20,8 @@ import cppblocks
 #verbose = True
 verbose = False
 
+testCounter = 0
+
 # Print some progress information in case verbose mode is enabled
 def information(msg):
     if verbose:
@@ -41,6 +43,9 @@ def runTestCase(testDir, test, name):
 
     if test['expected'] != disabledBlocksRelPaths:
         print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
+
+    global testCounter
+    testCounter += 1
 
 def runTestCases(testDir, testCase, name):
     for test in testCase.testCases:
@@ -67,3 +72,4 @@ else:
         if os.path.isdir(testCasePath):
             if re.search(sys.argv[1], testCasePath):
                 runTest(testCasePath, testName)
+    print "Executed {0} test cases".format(testCounter)
