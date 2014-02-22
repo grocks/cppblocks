@@ -10,7 +10,8 @@ class ExprInterpreter:
 
         self.visitorMap = {
                 'symbol' : self.v_symbol,
-                'number' : self.v_number
+                'number' : self.v_number,
+                'defined' : self.v_defined
         }
 
     def evaluate(self, rootNode):
@@ -22,3 +23,6 @@ class ExprInterpreter:
 
     def v_number(self, node):
         return int(node.value)
+
+    def v_defined(self, node):
+        return self.symdb.defined(node.value)

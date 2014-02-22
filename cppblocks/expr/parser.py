@@ -38,3 +38,10 @@ class ExprParser(GenericParser):
         '''
         t = args[0]
         return astNode('symbol', t.value)
+
+    def p_defined(self, args):
+        '''
+            expr ::= defined symbol
+        '''
+        t = args[1]
+        return astNode('defined', t.value)
