@@ -7,6 +7,7 @@ import os
 import importlib
 import re
 import sys
+import traceback
 
 
 # Directory of this script
@@ -44,8 +45,10 @@ def runTestCase(testDir, test, name):
 
         if test['expected'] != disabledBlocksRelPaths:
             print "Test failed {0}: '{1}'\nExpected: {2}\nGot: {3}".format(name, test['description'], test['expected'], disabledBlocks)
-    except:
+    except Exception as e:
         print "Test {0}: '{1}' failed!\n".format(name, test['description'])
+        print "Reason: {0}".format(e)
+        traceback.print_exc(file=sys.stdout)
 
     global testCounter
     testCounter += 1

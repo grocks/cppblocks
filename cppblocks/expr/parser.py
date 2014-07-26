@@ -6,6 +6,8 @@ The parser is implemented using the Spark GenericParser parser generator.
 
 from ..lib.spark import GenericParser
 
+from copy import copy
+
 class astNode:
     def __init__(self, typ, value=None):
         self.typ = typ
@@ -20,6 +22,28 @@ class astNode:
 
     def __repr__(self):
         return self.__str__();
+
+class astBinaryOpNode(astNode):
+    ' astBinaryOpNode represents binary operations like +,-,*,/ '
+    def __init__(self, typ, lhs, rhs, op):
+        astNode.__init__(self, 'binOp')
+        self.typ_str = typ
+        self.lhs = lhs
+        self.rhs = rhs
+        self.op = op
+        # Append to children for str()/repr()
+        self.children.append(lhs)
+        self.children.append(rhs)
+
+class astSumNode(astBinaryOpNode):
+    ' represents both + and - operations '
+    def __init__(self, typ, lhs, rhs, op):
+        astBinaryOpNode.__init__(self, typ, lhs, rhs, op)
+
+class astProductNode(astBinaryOpNode):
+    ' represents both * and / operations '
+    def __init__(self, typ, lhs, rhs, op):
+        astBinaryOpNode.__init__(self, typ, lhs, rhs, op)
 
 class astEqualityNode(astNode):
     ' astEquality represents both == and != equality operations '
@@ -38,48 +62,238 @@ class astNotNode(astNode):
         # Append to children for str()/repr()
         self.children.append(expr)
 
+class astAndNode(astNode):
+    def __init__(self, expr):
+        astNode.__init__(self, '&&')
+        self.children.append(expr)
+
+class astOrNode(astNode):
+    def __init__(self, expr):
+        astNode.__init__(self, '||')
+        self.children.append(expr)
+
 
 class ExprParser(GenericParser):
-    def __init__(self, startToken='expr'):
+    def __init__(self, startToken='cond'):
         GenericParser.__init__(self, startToken)
 
-    def p_number(self, args):
+    def p_cond(self, args):
         '''
-            expr ::= number
+            cond ::= atomic_cond
         '''
-        t = args[0]
-        return astNode('number', t.value)
 
-    def p_symbol(self, args):
-        '''
-            expr ::= symbol
-        '''
-        t = args[0]
-        return astNode('symbol', t.value)
+        return args[0]
 
-    def p_defined(self, args):
+    def p_atomic_cond(self, args):
         '''
-            expr ::= defined expr
+            atomic_cond ::= sum
         '''
-        t = args[1]
-        return astNode('defined', t.value)
+        return args[0]
 
-    def p_not(self, args):
+    def p_plus(self, args):
         '''
-            expr ::= ! expr
+            sum ::= product + product
         '''
-        return astNotNode(expr=args[1])
+        return astSumNode('+', args[0], args[2], lambda x,y: x+y)
 
-    def p_parenthesizedExpression(self, args):
+    def p_minus(self, args):
         '''
-            expr ::= ( expr )
+            sum ::= product - product
         '''
-        return args[1]
+        return astSumNode('-', args[0], args[2], lambda x,y: x-y)
 
-    def p_equality(self, args):
+    def p_unary_sum(self, args):
         '''
-            expr ::= expr == expr
-            expr ::= expr != expr
+            sum ::= product
         '''
-        opType = args[1].typ
-        return astEqualityNode(lhs=args[0], op=opType, rhs=args[2])
+        # We transform this expression to "number + 0" and forward it to the
+        # standard addition rule
+        zero = copy(args[0])
+        zero.value = '0'
+        plus = copy(args[0])
+        plus.typ = '+'
+        return self.p_plus([ args[0], plus, zero])
+
+    def p_mul(self, args):
+        '''
+            product ::= number * number
+        '''
+        return astProductNode('*', args[0], args[2], lambda x,y: x*y)
+
+    def p_div(self, args):
+        '''
+            product ::= number / number
+        '''
+        return astProductNode('/', args[0], args[2], lambda x,y: x/y)
+
+    def p_unary_product(self, args):
+        '''
+            product ::= number
+        '''
+        # We transform this expression to "number * 1" and forward it to the
+        # standard multiplication rule
+        one = copy(args[0])
+        one.value = '1'
+        mul = copy(args[0])
+        mul.typ = '*'
+        return self.p_mul([ args[0], mul, one])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#    def p_expr(self, args):
+#        '''
+#            expr ::= condOr
+#        '''
+#        return args[0]
+#
+#    def p_number(self, args):
+#        '''
+#            basicExpr ::= number
+#        '''
+#        t = args[0]
+#        return astNode('number', t.value)
+#
+#    def p_symbol(self, args):
+#        '''
+#            basicExpr ::= symbol
+#        '''
+#        t = args[0]
+#        return astNode('symbol', t.value)
+#
+#    def p_defined(self, args):
+#        '''
+#            basicExpr ::= defined symbol
+#            basicExpr ::= defined ( symbol )
+#        '''
+#        if len(args) == 2:
+#            t = args[1]
+#        else:
+#            t = args[2]
+#        return astNode('defined', t.value)
+#
+#    def p_not(self, args):
+#        '''
+#            expr ::= ! expr
+#        '''
+#        return astNotNode(expr=args[1])
+#
+#    def p_parenthesizedExpression(self, args):
+#        '''
+#            expr ::= ( expr )
+#        '''
+#        return args[1]
+#
+#    def p_equality(self, args):
+#        '''
+#            equalityExpr ::= equalityExpr == equalityExpr
+#            equalityExpr ::= equalityExpr != equalityExpr
+#        '''
+#        opType = args[1].typ
+#        return astEqualityNode(lhs=args[0], op=opType, rhs=args[2])
+#
+#    def p_simpleEquality(self, args):
+#        '''
+#        equalityExpr ::= basicExpr
+#        '''
+#        return args[0]
+#
+#    def p_conditionalOr(self, args):
+#        '''
+#            condOr ::= condOr || condAnd
+#        '''
+#        condOr = args[0]
+#        condAnd = args[2]
+#        condOr.children.append(condAnd)
+#        return condOr
+#
+#    def p_simpleConditionalOr(self, args):
+#        '''
+#            condOr ::= condAnd
+#        '''
+#        condAnd = args[0]
+#        return astOrNode(condAnd)
+#
+#    def p_conditionalAnd(self, args):
+#        '''
+#            condAnd ::= condAnd equalityExpr
+#        '''
+#        condAnd = args[0]
+#        equExpr = args[1]
+#        condAnd.children.append(equExpr)
+#        return condAnd
+#
+#    def p_simpleConditionalAnd(self, args):
+#        '''
+#            condAnd ::= equalityExpr
+#        '''
+#        equExpr = args[0]
+#        return astAndNode(equExpr)
+
+#   def p_logicalOR(self, args):
+#       '''
+#           OR_expr ::= AND_expr || AND_expr
+#       '''
+#       return astOrNode(lhs=args[0], rhs=args[1])
+
+#   def p_logicalAND(self, args):
+#       '''
+#           AND_expr ::= expr && expr
+#       '''
+#       return astAndNode(lhs=args[0], rhs=args[1])
+
+#   def p_emptyLogicalAND(self, args):
+#       '''
+#           AND_expr ::= expr
+#       '''
+#       # This Rule is required, because p_logicalOR() is built on the AND_expr
+#       return args[0]
+
+#   def p_emptyLogicalOR(self, args):
+#       '''
+#           OR_expr ::= AND_expr
+#       '''
+#       return args[0]
+
+#   def p_logicalOrAndExpression(self, args):
+#       '''
+#           expr ::= OR_expr
+#       '''
+#       return args[0]

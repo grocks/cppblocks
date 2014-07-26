@@ -62,6 +62,30 @@ class ExprScanner(GenericScanner):
         r'\)'
         self.rv.append(Token(')'))
 
+    def t_or(self, s):
+        r'\|\|'
+        self.rv.append(Token('||'))
+
+    def t_and(self, s):
+        r'&&'
+        self.rv.append(Token('&&'))
+
+    def t_plus(self, s):
+        r'\+'
+        self.rv.append(Token('+'))
+
+    def t_minus(self, s):
+        r'-'
+        self.rv.append(Token('-'))
+
+    def t_mul(self, s):
+        r'\*'
+        self.rv.append(Token('*'))
+
+    def t_div(self, s):
+        r'/'
+        self.rv.append(Token('/'))
+
     def t_space(self, s):
         r'\s+'
         pass # discard space
