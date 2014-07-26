@@ -153,9 +153,9 @@ class DisabledBlocksCompiler:
     def v_include(self, includePath):
         # Be careful with this cyclic import. See http://stackoverflow.com/questions/11698530/two-python-modules-require-each-others-contents-can-that-work
         from analyzer import analyzeFile
-        disabledBlocks = analyzeFile(includePath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
-
         if self.analyzeHeaders:
+            disabledBlocks = analyzeFile(includePath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
+
             self.disabledBlocks.update(disabledBlocks)
 
     def addDisabledBlock(self, start, length):

@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='CppBlocks',
-    version='0.1.0',
+    version='0.2.0',
     author='Sascha Friedmann',
     author_email='sascha.friedmann@exmaple.com',
     packages=['cppblocks', 'cppblocks.test'],
