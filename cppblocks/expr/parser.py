@@ -8,6 +8,8 @@ from ..lib.spark import GenericParser
 
 from copy import copy
 
+from scanner import CONSTANT_ZERO, CONSTANT_ONE, OP_PLUS, OP_MUL
+
 class astNode:
     def __init__(self, typ, value=None):
         self.typ = typ
@@ -22,6 +24,11 @@ class astNode:
 
     def __repr__(self):
         return self.__str__();
+
+class astAtomNode(astNode):
+    ' represents either a constant or a symbol, e.g., 3, 2, FOOBAR. '
+    def __init__(self, value):
+        astNode.__init__(self, 'atom', value)
 
 class astBinaryOpNode(astNode):
     ' astBinaryOpNode represents binary operations like +,-,*,/ '
@@ -44,6 +51,18 @@ class astProductNode(astBinaryOpNode):
     ' represents both * and / operations '
     def __init__(self, typ, lhs, rhs, op):
         astBinaryOpNode.__init__(self, typ, lhs, rhs, op)
+
+class astUnaryOpNode(astNode):
+    def __init__(self, typ, lhs, op):
+        astNode.__init__(self, 'unaOp', lhs)
+        self.typ_str = typ
+        self.lhs = lhs
+        self.op = op
+
+class astDefinedNode(astUnaryOpNode):
+    def __init__(self, lhs):
+        op = lambda x,symdb: symdb.defined(x)
+        astUnaryOpNode.__init__(self, 'defined', lhs, op)
 
 class astEqualityNode(astNode):
     ' astEquality represents both == and != equality operations '
@@ -81,7 +100,6 @@ class ExprParser(GenericParser):
         '''
             cond ::= atomic_cond
         '''
-
         return args[0]
 
     def p_atomic_cond(self, args):
@@ -108,36 +126,41 @@ class ExprParser(GenericParser):
         '''
         # We transform this expression to "number + 0" and forward it to the
         # standard addition rule
-        zero = copy(args[0])
-        zero.value = '0'
-        plus = copy(args[0])
-        plus.typ = '+'
-        return self.p_plus([ args[0], plus, zero])
+        return self.p_plus([args[0], OP_PLUS, CONSTANT_ZERO])
 
     def p_mul(self, args):
         '''
-            product ::= number * number
+            product ::= atom * atom
         '''
         return astProductNode('*', args[0], args[2], lambda x,y: x*y)
 
     def p_div(self, args):
         '''
-            product ::= number / number
+            product ::= atom / atom
         '''
         return astProductNode('/', args[0], args[2], lambda x,y: x/y)
 
     def p_unary_product(self, args):
         '''
-            product ::= number
+            product ::= atom
         '''
         # We transform this expression to "number * 1" and forward it to the
         # standard multiplication rule
-        one = copy(args[0])
-        one.value = '1'
-        mul = copy(args[0])
-        mul.typ = '*'
-        return self.p_mul([ args[0], mul, one])
+        return self.p_mul([args[0], OP_MUL, CONSTANT_ONE])
 
+    def p_defined(self, args):
+        '''
+            product ::= defined symbol
+        '''
+        return astDefinedNode(args[1])
+
+    def p_atom(self, args):
+        '''
+            atom ::= symbol
+            atom ::= number
+        '''
+        # This rule exists to simplify the product rules
+        return args[0]
 
 
 

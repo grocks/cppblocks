@@ -21,6 +21,20 @@ class Token:
     def __cmp__(self, o):
         return cmp(self.typ, o)
 
+class NumberToken(Token):
+    def __init__(self, value):
+        Token.__init__(self, 'number', value)
+
+class SymbolToken(Token):
+    def __init__(self, value):
+        Token.__init__(self, 'symbol', value)
+
+CONSTANT_ZERO = NumberToken('0')
+CONSTANT_ONE = NumberToken('1')
+
+OP_PLUS = Token('+')
+OP_MUL = Token('*')
+
 class ExprScanner(GenericScanner):
     def __init__(self):
         GenericScanner.__init__(self)
@@ -36,11 +50,11 @@ class ExprScanner(GenericScanner):
 
     def t_constant(self, s):
         r'[0-9]+'
-        self.rv.append(Token('number', s))
+        self.rv.append(NumberToken(s))
 
     def t_symbol(self, s):
         r'\b[A-Za-z_][A-Za-z_0-9]*\b'
-        self.rv.append(Token('symbol', s))
+        self.rv.append(SymbolToken(s))
 
     def t_equality(self, s):
         r'=='

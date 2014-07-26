@@ -15,11 +15,8 @@ def evalCondExpression(database, expression):
     rootNode = parser.parse(tokens)
 
     interpreter = ExprInterpreter(database)
-    return interpreter.evaluate(rootNode)
+    res =  interpreter.evaluate(rootNode)
 
-    if expression.isdigit():
-        expr = expression
-    else:
-        expr = database.getValue(expression)
+    # print "'{0}' -> {1}".format(expression, res)
 
-    return int(expr)
+    return res

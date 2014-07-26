@@ -28,8 +28,13 @@ class Database:
             # Undefined symbols evaluate to zero according to the C standard
             return 0
         else:
-            # Test if the symbol evaluates to a numberic value or to another symbol
             value = self.symbols[symbol]
+
+            # Symbols without a defined value evalute to zero
+            if value is None:
+                return 0
+
+            # Test if the symbol evaluates to a numberic value or to another symbol
             if len(value) and value[0].isdigit():
                 return value
             elif len(value) and recursive:

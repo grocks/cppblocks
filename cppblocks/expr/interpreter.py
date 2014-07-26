@@ -17,7 +17,8 @@ class ExprInterpreter:
                 '!' : self.v_not,
                 '||' : self.v_or,
                 '&&' : self.v_and,
-                'binOp' : self.v_binOp
+                'binOp' : self.v_binOp,
+                'unaOp' : self.v_unaOp
         }
 
     def evaluate(self, rootNode):
@@ -60,3 +61,6 @@ class ExprInterpreter:
         lhs = self.evaluate(node.lhs)
         rhs = self.evaluate(node.rhs)
         return node.op(lhs, rhs)
+
+    def v_unaOp(self, node):
+        return node.op(node.lhs.value, self.symdb)
