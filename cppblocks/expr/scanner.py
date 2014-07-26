@@ -9,11 +9,11 @@ class Token:
         self.typ = typ
         self.value = value
 
-    def __str__(self):
+    def __str__(self, indent=0):
         if self.value:
-            return "{0}({1})".format(self.typ, self.value)
+            return "{0}{1}({2})".format(indent*' ', self.typ, self.value)
         else:
-            return self.typ
+            return "{0}{1}".format(indent*' ', self.typ)
 
     def __repr__(self):
         return self.__str__()

@@ -17,6 +17,6 @@ def evalCondExpression(database, expression):
     interpreter = ExprInterpreter(database)
     res =  interpreter.evaluate(rootNode)
 
-    # print "'{0}' -> {1}".format(expression, res)
+    #print "'{0}' -> {1}".format(expression, res)
 
     return res

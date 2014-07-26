@@ -52,6 +52,11 @@ class astProductNode(astBinaryOpNode):
     def __init__(self, typ, lhs, rhs, op):
         astBinaryOpNode.__init__(self, typ, lhs, rhs, op)
 
+class astEqualityNode(astBinaryOpNode):
+    ' represents == and != operations '
+    def __init__(self, typ, lhs, rhs, op):
+        astBinaryOpNode.__init__(self, typ, lhs, rhs, op)
+
 class astUnaryOpNode(astNode):
     def __init__(self, typ, lhs, op):
         astNode.__init__(self, 'unaOp', lhs)
@@ -59,54 +64,70 @@ class astUnaryOpNode(astNode):
         self.lhs = lhs
         self.op = op
 
-class astDefinedNode(astUnaryOpNode):
+class astDefinedNode(astNode):
+    def __init__(self, symbol):
+        astNode.__init__(self, 'defined', symbol)
+
+class astNotNode(astUnaryOpNode):
     def __init__(self, lhs):
-        op = lambda x,symdb: symdb.defined(x)
-        astUnaryOpNode.__init__(self, 'defined', lhs, op)
+        op = lambda x,symdb: not x
+        astUnaryOpNode.__init__(self, '!', lhs, op)
 
-class astEqualityNode(astNode):
-    ' astEquality represents both == and != equality operations '
-    def __init__(self, op, lhs, rhs):
-        astNode.__init__(self, op)
-        self.lhs = lhs
-        self.rhs = rhs
-        # Append to children for str()/repr()
-        self.children.append(lhs)
-        self.children.append(rhs)
+class astAndNode(astBinaryOpNode):
+    def __init__(self, lhs, rhs, op):
+        astBinaryOpNode.__init__(self, '&&', lhs, rhs, op)
 
-class astNotNode(astNode):
-    def __init__(self, expr):
-        astNode.__init__(self, '!')
-        self.expr = expr
-        # Append to children for str()/repr()
-        self.children.append(expr)
-
-class astAndNode(astNode):
-    def __init__(self, expr):
-        astNode.__init__(self, '&&')
-        self.children.append(expr)
-
-class astOrNode(astNode):
-    def __init__(self, expr):
-        astNode.__init__(self, '||')
-        self.children.append(expr)
+class astOrNode(astBinaryOpNode):
+    def __init__(self, lhs, rhs, op):
+        astBinaryOpNode.__init__(self, '||', lhs, rhs, op)
 
 
 class ExprParser(GenericParser):
     def __init__(self, startToken='cond'):
         GenericParser.__init__(self, startToken)
 
-    def p_cond(self, args):
+    def p_simple_cond(self, args):
         '''
             cond ::= atomic_cond
         '''
         return args[0]
 
-    def p_atomic_cond(self, args):
+    def p_negate(self, args):
+        '''
+            cond ::= ! atomic_cond
+        '''
+        return astNotNode(args[1])
+
+    def p_and(self, args):
+        '''
+            cond ::= atomic_cond && atomic_cond
+        '''
+        return astAndNode(args[0], args[2], lambda x,y: x and y)
+
+    def p_or(self, args):
+        '''
+            cond ::= atomic_cond || atomic_cond
+        '''
+        return astOrNode(args[0], args[2], lambda x,y: x or y)
+
+    def p_simple_atomic_cond(self, args):
         '''
             atomic_cond ::= sum
         '''
         return args[0]
+
+    def p_equal_atomic_cond(self, args):
+        '''
+            atomic_cond ::= sum == sum
+        '''
+        return astEqualityNode('==', args[0], args[2], lambda x,y: x==y)
+
+    def p_unequal_atomic_cond(self, args):
+        '''
+            atomic_cond ::= sum != sum
+        '''
+        return astEqualityNode('!=', args[0], args[2], lambda x,y: x!=y)
+
 
     def p_plus(self, args):
         '''
@@ -152,7 +173,13 @@ class ExprParser(GenericParser):
         '''
             product ::= defined symbol
         '''
-        return astDefinedNode(args[1])
+        return astDefinedNode(args[1].value)
+
+    def p_paren_defined(self, args):
+        '''
+            product ::= defined ( symbol )
+        '''
+        return astDefinedNode(args[2].value)
 
     def p_atom(self, args):
         '''
@@ -161,6 +188,13 @@ class ExprParser(GenericParser):
         '''
         # This rule exists to simplify the product rules
         return args[0]
+
+    def p_parens(self, args):
+        '''
+            atom ::= ( cond )
+        '''
+        return args[1]
+
 
 
 
