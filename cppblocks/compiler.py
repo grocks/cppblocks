@@ -63,10 +63,10 @@ class DisabledBlocksCompiler:
         return not self.symbols.defined(node.symbol)
 
     def v_if(self, node):
-        return evalCondExpression(self.symbols, node.expression)
+        return evalCondExpression(self.symbols, node.expression, node.line)
 
     def v_elif(self, node):
-        return evalCondExpression(self.symbols, node.expression)
+        return evalCondExpression(self.symbols, node.expression, node.line)
 
     def v_ifSection(self, node):
         ifExprResult = self.visit(node.ifGroup)
@@ -115,7 +115,7 @@ class DisabledBlocksCompiler:
         '''
         idx = 0
         for elifNode in elifGroups:
-            elifExprResult = evalCondExpression(self.symbols, elifNode.expression)
+            elifExprResult = evalCondExpression(self.symbols, elifNode.expression, elifNode.line)
             # If this elif's expression evaluates to true, we disable all the
             # elif blocks preceeding it and all the elif block following it.
             # We exploit Python's very convenient array slicing semantics to

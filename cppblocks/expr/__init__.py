@@ -7,11 +7,11 @@ from scanner import ExprScanner
 from parser import ExprParser
 from interpreter import ExprInterpreter
 
-def evalCondExpression(database, expression):
+def evalCondExpression(database, expression, line):
     scanner = ExprScanner()
     tokens = scanner.tokenize(expression)
 
-    parser = ExprParser()
+    parser = ExprParser(line)
     rootNode = parser.parse(tokens)
 
     interpreter = ExprInterpreter(database)
