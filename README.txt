@@ -1,48 +1,31 @@
-How to write a python module/package:
+# CppBlocks
 
-http://guide.python-distribute.org/creation.html
+CppBlocks evaluates C/C++ preprocessor directives to find #if, #ifdef, #ifndef, #elif and #else blocks that are currently excluded from the compilation.
 
-Actual readme content is wirtten in reST:
-===========
-Towel Stuff
-===========
+For example, in the following C code listing the line 18 is not compiled:
 
-Towel Stuff provides such and such and so and so. You might find
-it most useful for tasks involving <x> and also <y>. Typical usage
-often looks like this::
+```
+#include <stdio.h>
 
-    #!/usr/bin/env python
+#define ENTER_IF 1
 
-    from towelstuff import location
-    from towelstuff import utils
+int main()
+{
 
-    if utils.has_towel():
-        print "Your towel is located:", location.where_is_my_towel()
+#ifdef ENTER_IF
+    printf("Hello GitHub!\n");
+#else
+    printf("Hello world!\n");
+#endif
 
-(Note the double-colon and 4-space indent formatting above.)
+    return 0;
+}
+```
 
-Paragraphs are separated by blank lines. *Italics*, **bold**,
-and ``monospace`` look like this.
+CppBlocks finds such blocks. CppBlocks is split into two parts: a Python library and a Vim plugin.
 
+The Python library implements the C/C++ preprocessor and returns a list of all such inactive blocks.
 
-A Section
-=========
+The CppBlocks library can be used in plug-ins for your favorite text editor/IDE to see all inactive blocks in your source code.
 
-Lists look like this:
-
-* First
-
-* Second. Can be multiple lines
-  but must be indented properly.
-
-A Sub-Section
--------------
-
-Numbered lists look like you'd expect:
-
-1. hi there
-
-2. must be going
-
-Urls are http://like.this and links can be
-written `like this <http://www.example.com/foo/bar>`_.
+At the moment the CppBlocks project includes a Vim plugin that demonstrates the capabilities of CppBlocks.
