@@ -34,11 +34,13 @@ endif
 
 " Options: {{{1
 if !exists('g:CppBlocks_library_path')
-  let g:CppBlocks_library_path = expand('<sfile>:h:p') . '/..'
+  " Translate backslashes to slashes for better interoperability on windows
+  let g:CppBlocks_library_path = substitute(expand('<sfile>:h:p') . '/..', '\\', '/', 'g')
 endif
 
 if !exists('g:CppBlocks_python_path')
-  let g:CppBlocks_python_path = expand('<sfile>:h:p')
+  " Translate backslashes to slashes for better interoperability on windows
+  let g:CppBlocks_python_path = substitute(expand('<sfile>:h:p'), '\\', '/', 'g')
 endif
 
 if !exists('g:CppBlocks_analyze_headers')
