@@ -14,7 +14,10 @@ class Database:
         self.symbols[symbol] = value
 
     def remove(self, symbol):
-        del self.symbols[symbol]
+        try:
+            del self.symbols[symbol]
+        except KeyError:
+            pass # It is okay if the symbol was never defined.
 
     def defined(self, symbol):
         return symbol in self.symbols
