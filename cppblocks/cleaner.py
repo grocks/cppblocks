@@ -17,3 +17,17 @@ def stripComments(string):
     string = reBlockComment.sub(lambda m: re.sub('[^\n]', ' ', m.group(0)), string)
     string = reLineComment.sub(lambda m: re.sub('[^\n]', ' ', m.group(0)), string)
     return string
+
+def joinMultiLines(lines):
+    '''
+        If a line ends in a backslash (multi-line/line-continuation) the
+        backslash is replaced with the content of the next line.
+
+        In other words, it joins adjacent lines ending in a backslash while
+        preserving the numbers of lines in a file.
+    '''
+    for idx in reversed(xrange(len(lines))):
+        line = lines[idx]
+        if line.endswith("\\"):
+            lines[idx] = re.sub(r'\\$', lines[idx+1], line)
+    return lines

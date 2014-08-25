@@ -113,11 +113,20 @@ class IncludeQuoteToken(Token):
         return '{0}({1})'.format(Token.__str__(self), self.path)
 
 class CppScanner:
-    def __init__(self, data):
+    ''' This scanner requires some pre-processing on its input.
+
+    Backslash-escaped lines (multi-line directives) must be joined into a
+    single line and comments must be stripped from the file.
+
+    Additionally, the number of lines in the file must not be altered, or the
+    output of CppBlocks won't match the given input file anymore.
+
+    This preprocessing is done in analyzeFile() from analyzer.py
+    '''
+    def __init__(self, lines):
         self.rv = []
-        self.lines = data.splitlines()
+        self.lines = lines
         self.currentLine = 0
-        # TODO: Add multi-line handling at this point
 
     def tokenize(self):
         for line in self.lines:
