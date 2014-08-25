@@ -5,3 +5,4 @@
 * Rename symbols/database variables to symdb
 * Test analyzeHeaders set to TRUE
 * Support octal/hexadecimal constants
+* Stop pattern matching in scanner.py after the first hit
