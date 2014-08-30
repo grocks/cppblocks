@@ -104,3 +104,6 @@ class ExprScanner(GenericScanner):
         r'\s+'
         pass # discard space
 
+    def t_default(self, s):
+        from ..messages import UnsupportedToken
+        raise UnsupportedToken(s)
