@@ -10,16 +10,16 @@ import re
 
 # We compile all regular expression used for parsing to speed up the tokenization process
 reCppDirective = re.compile(r'^\s*\#')
-reDefine = re.compile('^\s*#\s*define\s+([A-Za-z_][A-Za-z_0-9]*)(\s+(.*))?\s*$')
-reUndef = re.compile('^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
-reIfdef = re.compile('^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
-reIfndef = re.compile('^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
-reIf = re.compile('^\s*#\s*if\s+(.*)\s*$')
-reElif = re.compile('^\s*#\s*elif\s+(.*)\s*$')
-reElse = re.compile('^\s*#\s*else\s*$')
-reEndif = re.compile('^\s*#\s*endif\s*$')
-reIncludeAngle = re.compile('^\s*#\s*include\s*<([^>]+)>\s*$')
-reIncludeQuote = re.compile('^\s*#\s*include\s*"([^"]+)"\s*$')
+reDefine = re.compile(r'^\s*#\s*define\s+([A-Za-z_][A-Za-z_0-9]*)(\s+(.*))?\s*$')
+reUndef = re.compile(r'^\s*#\s*undef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIfdef = re.compile(r'^\s*#\s*ifdef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIfndef = re.compile(r'^\s*#\s*ifndef\s+([A-Za-z_][A-Za-z_0-9]*)\s*$')
+reIf = re.compile(r'^\s*#\s*if\b\s*(.*)\s*$')
+reElif = re.compile(r'^\s*#\s*elif\b\s*(.*)\s*$')
+reElse = re.compile(r'^\s*#\s*else\s*$')
+reEndif = re.compile(r'^\s*#\s*endif\s*$')
+reIncludeAngle = re.compile(r'^\s*#\s*include\s*<([^>]+)>\s*$')
+reIncludeQuote = re.compile(r'^\s*#\s*include\s*"([^"]+)"\s*$')
 
 # Test if the line is a CPP directive, i.e., start with a #
 def isCppDirective(line):
