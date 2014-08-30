@@ -89,27 +89,33 @@ class ExprParser(GenericParser):
 
     def p_simple_cond(self, args):
         '''
-            cond ::= atomic_cond
+            cond ::= cond_or
         '''
         return args[0]
 
-    def p_negate(self, args):
+    def p_or(self, args):
         '''
-            cond ::= ! atomic_cond
+            cond_or ::= cond_or || cond_and
         '''
-        return astNotNode(args[1])
+        return astOrNode(args[0], args[2], lambda x,y: x or y)
+
+    def p_simple_or(self, args):
+        '''
+            cond_or ::= cond_and
+        '''
+        return args[0]
 
     def p_and(self, args):
         '''
-            cond ::= atomic_cond && atomic_cond
+            cond_and ::= cond_and && atomic_cond
         '''
         return astAndNode(args[0], args[2], lambda x,y: x and y)
 
-    def p_or(self, args):
+    def p_simple_and(self, args):
         '''
-            cond ::= atomic_cond || atomic_cond
+            cond_and ::= atomic_cond
         '''
-        return astOrNode(args[0], args[2], lambda x,y: x or y)
+        return args[0]
 
     def p_simple_atomic_cond(self, args):
         '''
@@ -128,7 +134,6 @@ class ExprParser(GenericParser):
             atomic_cond ::= sum != sum
         '''
         return astEqualityNode('!=', args[0], args[2], lambda x,y: x!=y)
-
 
     def p_plus(self, args):
         '''
@@ -162,6 +167,12 @@ class ExprParser(GenericParser):
         '''
         return astProductNode('/', args[0], args[2], lambda x,y: x/y)
 
+    def p_negate(self, args):
+        '''
+            product ::= ! atom
+        '''
+        return astNotNode(args[1])
+
     def p_unary_product(self, args):
         '''
             product ::= atom
@@ -172,13 +183,13 @@ class ExprParser(GenericParser):
 
     def p_defined(self, args):
         '''
-            product ::= defined symbol
+            atom ::= defined symbol
         '''
         return astDefinedNode(args[1].value)
 
     def p_paren_defined(self, args):
         '''
-            product ::= defined ( symbol )
+            atom ::= defined ( symbol )
         '''
         return astDefinedNode(args[2].value)
 
