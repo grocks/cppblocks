@@ -20,7 +20,8 @@ parser = argparse.ArgumentParser(description='The Auto Test Generator generates 
 parser.add_argument('-I', '--include', metavar="PATH", type=filePath(parser, '--include'), action='append', default=[], help='The directories to search for header files. (Default: no directory)')
 parser.add_argument('-o', '--outdir', metavar="DIRPATH", type=filePath(parser, '--outdir'), action='store', default='.', help='The directory to store the test in. (Default: current directory.)')
 parser.add_argument('files', metavar="FILE", type=str, nargs='+', help='The source files to generate tests from.')
+parser.add_argument('-P', '--cpp', metavar="CPP", type=str, action='store', default='cpp', help='The CPP command that serves as reference for the Auto Test Generator. (Default: cpp)')
 
 args = parser.parse_args()
 
-makeCppBlocksTest(args.outdir, args.files, args.include)
+makeCppBlocksTest(outdir=args.outdir, sourceFiles=args.files, includeDirs=args.include, preprocessor=args.cpp)
