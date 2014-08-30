@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ''' The Auto Test Generator generates CppBlocks tests from source code file.
 
 For usage information see the --help output.
