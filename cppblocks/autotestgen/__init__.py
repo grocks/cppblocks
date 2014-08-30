@@ -28,6 +28,7 @@ from autotestgen.codemangler import replaceNonCppLinesWithLineNumbers
 
 reCompilerDirective = re.compile(r'^\s*\#')
 reEmptyLine = re.compile(r'^\s*$')
+reNumberedLine = re.compile(r'^\s*[0-9]+\s*$')
 
 def makeCppBlocksTest(outdir, sourceFiles, includeDirs, preprocessor='cpp'):
     fileFinderAngleInclude = FileFinder(includeDirs)
@@ -87,9 +88,8 @@ def cleanFile(processedFileContent):
     cleanedLines = []
 
     for line in lines:
-        if reCompilerDirective.match(line) or reEmptyLine.match(line):
-            continue
-        cleanedLines.append(line)
+        if reNumberedLine.match(line):
+            cleanedLines.append(line)
 
     return map(int, cleanedLines)
 
