@@ -55,8 +55,6 @@ def expandIncludes(filepath, fileFinderAngleInclude, fileFinderQuoteInclude, fil
     fileContent = stripComments(fileContent)
     lines = fileContent.split('\n')
 
-    lines = disperseCppDirectives(lines)
-
     cleanedLines = joinMultiLines(lines)
 
     includedTextBlocks = getIncludedTextBlocks(filepath, cleanedLines, fileFinderAngleInclude, fileFinderQuoteInclude, fileHistoryCache)
@@ -95,24 +93,3 @@ def getIncludedTextBlocks(filepath, lines, fileFinderAngleInclude, fileFinderQuo
             textBlocks.append({ 'lineIdx': idx, 'text': errorMessage })
 
     return textBlocks
-
-def disperseCppDirectives(lines):
-    '''Inserts an empty line before each CPP directive.
-
-    This results in now two CPP directives being directly next to each other.
-    This ensures that we assign a line number to each branch/scope. Otherwise
-    the following piece of code would not appear visibly in the CPP output, but
-    CppBlocks will find that this block is not active:
-
-        #ifdef FOO
-        #undef FOO
-        #endif
-    '''
-    dispersedLines = []
-
-    for line in lines:
-        if reCppDirective.match(line):
-            dispersedLines.append("")
-        dispersedLines.append(line)
-
-    return dispersedLines

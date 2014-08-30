@@ -24,10 +24,9 @@ import sys
 
 from filefinder import FileFinder, CurDirFileFinder
 from autotestgen.ixpand import expandIncludes
-from autotestgen.codemangler import replaceNonCppLinesWithLineNumbers
+from autotestgen.codemangler import stripNonCppDirectives, markConditionalBlocks
+from messages import InternalError
 
-reCompilerDirective = re.compile(r'^\s*\#')
-reEmptyLine = re.compile(r'^\s*$')
 reNumberedLine = re.compile(r'^\s*[0-9]+\s*$')
 
 def makeCppBlocksTest(outdir, sourceFiles, includeDirs, preprocessor='cpp'):
@@ -44,26 +43,27 @@ def makeCppBlocksTest(outdir, sourceFiles, includeDirs, preprocessor='cpp'):
         inputFilePath = createInputFilePath(sourceFile, idx)
 
         with createInputFile(outdir, inputFilePath, idx) as f:
-            collapsedFile = prepareCollapsedSourceFile(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude)
+            markedText = prepareMarkedSourceFile(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude)
 
-            f.write(collapsedFile['text'])
+            f.write(markedText['text'])
             f.flush()
 
             activeLines = preprocessFile(f.name, includeDirs, preprocessor)
 
-        allLines = collapsedFile['nonCppLineNumberList']
+        cppBlockMarkerList = markedText['cppBlockMarkerList']
 
-        disabledBlocks = computeDisabledBlocks(allLines, activeLines)
+        disabledBlocks = computeDisabledBlocks(cppBlockMarkerList, activeLines)
 
         testCase = createTestCase(inputFilePath, disabledBlocks)
         testCases.append(testCase)
 
     writeTestScript(outdir, testCases)
 
-def prepareCollapsedSourceFile(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude):
-        textBlock = expandIncludes(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude)
-        collapsedFile = replaceNonCppLinesWithLineNumbers(textBlock)
-        return collapsedFile
+def prepareMarkedSourceFile(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude):
+    textBlock = expandIncludes(sourceFile, fileFinderAngleInclude, fileFinderQuoteInclude)
+    lines = stripNonCppDirectives(textBlock)
+    markedText = markConditionalBlocks(lines)
+    return markedText
 
 def preprocessFile(sourceFile, includeDirs, preprocessor):
     ''' Preprocess given source file.
@@ -93,8 +93,36 @@ def cleanFile(processedFileContent):
 
     return map(int, cleanedLines)
 
-def computeDisabledBlocks(allLines, activeLines):
-    return list(set(allLines) - set(activeLines))
+def computeDisabledBlocks(cppBlockMarkerList, activeLines):
+    # Extract the disabled block markers (filtered out by the preprocessor)
+    disabledBlockMarkers = list(set(cppBlockMarkerList) - set(activeLines))
+
+    # The block markers must be an even numbers, because they always come in pairs.
+    if len(disabledBlockMarkers) % 2 != 0:
+        raise InternalError('Computing the disabled blocks failed! Expected an even number of markers. Got an odd number: {0}'.format(len(cppBlockMarkerList)))
+
+    # The set does not retain the order of the line number markers
+    disabledBlockMarkers.sort()
+
+    # Compute length of the disabled blocks and create a list of pairs (startLine, length)
+    disabledBlocks = []
+    startMarker = None
+    for idx in xrange(len(disabledBlockMarkers)):
+        if idx % 2 == 0: # A start marker, save it
+            startMarker = disabledBlockMarkers[idx]
+        else: # An end marker
+            # Compute the block length and store it in the index (number of
+            # lines between the markers plus the two lines for the start and
+            # ending cpp directives around them).
+            # Example:
+            #  Line 1: #if 0
+            #  Line 2: 1
+            #  Line 3: 3
+            #  Line 4: #endif
+            length = disabledBlockMarkers[idx] - startMarker + 2
+            disabledBlocks.append((startMarker, length))
+
+    return disabledBlocks
 
 def createTestDirectoryStructure(outdir):
     testDir = pathJoin(outdir, 'input')
@@ -120,13 +148,14 @@ def createInputFile(outdir, sourceFile, idx):
     return open(inputFile, 'w+b')
 
 def createTestCase(sourceFile, disabledBlocks):
+    from pprint import pformat as convertToPythonCode
     return '''    {{
         'description' : 'Auto-generated test.',
         'expected' : {{
-            '{0}' : [{1}]
+            '{0}' : {1}
         }},
         'input' : [ '{0}', False, [], [], {{}} ]
-    }}'''.format(sourceFile, ", ".join(map(str, disabledBlocks)))
+    }}'''.format(sourceFile, convertToPythonCode(disabledBlocks))
 
 def writeTestScript(outdir, testCases):
     testScript = '''testCases = [

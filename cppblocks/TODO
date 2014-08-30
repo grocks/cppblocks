@@ -6,17 +6,3 @@
 * Test analyzeHeaders set to TRUE
 * Support octal/hexadecimal constants
 * Stop pattern matching in scanner.py after the first hit
-
-* Auto Test Generator
-** Add empty lines only before #if, #elif, #else and #endif blocks
-    --> This way we have a non-CPP-line in each block and only one non-CPP-line (after condensing happened)
-        Otherwise it is impossible to compute the expected list of disabled
-        blocks, because we would insert two non-CPP-lines in the following
-        snippet:
-
-            #ifndef FOO
-            #define FOO
-            #endif
-** Compute list of disabled blocks properly:
-    - List of pairs (and not a simple list as currently)
-    - Pair starts with line number of CPP directive followed by count of disabled line numbers

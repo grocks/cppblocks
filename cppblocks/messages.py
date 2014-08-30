@@ -25,3 +25,7 @@ class FileNotFound(CppBlocksException):
 class UnsupportedToken(CppBlocksException):
     def __init__(self, token):
         self.message = "Parser does not support handling of '{0}'".format(token)
+
+class InternalError(CppBlocksException):
+    def __init__(self, error):
+        self.message = "An internal error occurred. Description: {0}".format(error)
