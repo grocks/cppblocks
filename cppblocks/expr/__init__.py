@@ -9,7 +9,12 @@ from interpreter import ExprInterpreter
 
 def evalCondExpression(database, expression, line):
     scanner = ExprScanner()
-    tokens = scanner.tokenize(expression)
+    tokens = None
+    try:
+        tokens = scanner.tokenize(expression)
+    except SystemExit as e:
+        print "Error in line '{0}'".format(line)
+        print "Exception: {0}".format(e)
 
     parser = ExprParser(line)
     rootNode = parser.parse(tokens)
