@@ -16,7 +16,7 @@ The Auto Test Generator uses this list of line numbers to create a list of
 disabled blocks for use with the CppBlocks testsuite.
 '''
 
-from subprocess import check_output as invokeCommand
+from subprocess import check_output as invokeCommand, STDOUT
 from os.path import join as pathJoin, basename
 import os
 import re
@@ -49,6 +49,8 @@ def makeCppBlocksTest(outdir, sourceFiles, includeDirs, preprocessor='cpp'):
             f.flush()
 
             activeLines = preprocessFile(f.name, includeDirs, preprocessor)
+            if activeLines is None: # Preprocessing failed, skip this file
+                continue
 
         cppBlockMarkerList = markedText['cppBlockMarkerList']
 
@@ -79,7 +81,11 @@ def preprocessFile(sourceFile, includeDirs, preprocessor):
     map(lambda d: commandLine.extend(['-I', d]), includeDirs)
     commandLine.append(sourceFile)
 
-    processedFileContent = invokeCommand(commandLine)
+    try:
+        processedFileContent = invokeCommand(commandLine, stderr=STDOUT)
+    except Exception as e:
+        print >> sys.stderr, "{0}: command '{1}' exited with return code {2}".format(sourceFile, preprocessor, e.returncode)
+        return None
 
     return cleanFile(processedFileContent)
 
