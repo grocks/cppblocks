@@ -152,9 +152,9 @@ def createTestCase(sourceFile, disabledBlocks):
     return '''    {{
         'description' : 'Auto-generated test.',
         'expected' : {{
-            '{0}' : {1}
+            r'{0}' : {1}
         }},
-        'input' : [ '{0}', False, [], [], {{}} ]
+        'input' : [ r'{0}', False, [], [], {{}} ]
     }}'''.format(sourceFile, convertToPythonCode(disabledBlocks))
 
 def writeTestScript(outdir, testCases):
