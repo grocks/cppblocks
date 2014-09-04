@@ -29,3 +29,17 @@ class UnsupportedToken(CppBlocksException):
 class InternalError(CppBlocksException):
     def __init__(self, error):
         self.message = "An internal error occurred. Description: {0}".format(error)
+
+class LexicalError(CppBlocksException):
+    def __init__(self, filepath, line, column, expression):
+        self.filepath = filepath
+        self.line = line
+        self.column = column
+        self.expression = expression
+        self.message = "{0}:{1}: lexical error at position {2}\n{3}\n{4}".format(
+                self.filepath,
+                self.line,
+                self.column,
+                self.expression,
+                ' '*(self.column-1) + '^'
+        )

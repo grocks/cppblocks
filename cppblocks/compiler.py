@@ -67,10 +67,10 @@ class DisabledBlocksCompiler:
         return not self.symbols.defined(node.symbol)
 
     def v_if(self, node):
-        return evalCondExpression(self.symbols, node.expression, node.line)
+        return self.evalExpression('v_if', node)
 
     def v_elif(self, node):
-        return evalCondExpression(self.symbols, node.expression, node.line)
+        return self.evalExpression('v_elif', node)
 
     def v_ifSection(self, node):
         ifExprResult = self.visit(node.ifGroup)
@@ -119,7 +119,7 @@ class DisabledBlocksCompiler:
         '''
         idx = 0
         for elifNode in elifGroups:
-            elifExprResult = evalCondExpression(self.symbols, elifNode.expression, elifNode.line)
+            elifExprResult = self.evalExpression('elif', elifNode)
             # If this elif's expression evaluates to true, we disable all the
             # elif blocks preceeding it and all the elif block following it.
             # We exploit Python's very convenient array slicing semantics to
@@ -161,6 +161,11 @@ class DisabledBlocksCompiler:
             disabledBlocks = analyzeFile(includePath, self.analyzeHeaders, self.fileFinderAngleInclude, self.fileFinderQuoteInclude, self.symbols)
 
             self.disabledBlocks.update(disabledBlocks)
+
+    def evalExpression(self, context, node):
+        log('{0}: evalCondExpression({1}) (line: {2})'.format(context, node.expression, node.line))
+        return evalCondExpression(self.symbols, node.expression, self.filepath, node.line)
+
 
     def addDisabledBlock(self, start, length):
         ' By convention the first entry in disabledBlocks is always for the file we were invoked on. '

@@ -40,8 +40,10 @@ OP_PLUS = Token('+')
 OP_MUL = Token('*')
 
 class ExprScanner(GenericScanner):
-    def __init__(self):
+    def __init__(self, filepath, line):
         GenericScanner.__init__(self)
+        self.filepath = filepath
+        self.line = line
 
     def tokenize(self, expression):
         self.rv = []
@@ -112,3 +114,7 @@ class ExprScanner(GenericScanner):
         from ..messages import UnsupportedToken
         log('unsupported token: ' + str(s))
         raise UnsupportedToken(s)
+
+    def error(self, expression, column):
+        from ..messages import LexicalError
+        raise LexicalError(self.filepath, self.line, column, expression)

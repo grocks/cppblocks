@@ -3,18 +3,18 @@
     conditional expressions.
 '''
 
+import trace
+def log(*args):
+    trace.trace('cppblocks.expr.eval', *args)
+
 from scanner import ExprScanner
 from parser import ExprParser
 from interpreter import ExprInterpreter
+from ..messages import LexicalError
 
-def evalCondExpression(database, expression, line):
-    scanner = ExprScanner()
-    tokens = None
-    try:
-        tokens = scanner.tokenize(expression)
-    except SystemExit as e:
-        print "Error in line '{0}'".format(line)
-        print "Exception: {0}".format(e)
+def evalCondExpression(database, expression, filepath, line):
+    scanner = ExprScanner(filepath, line)
+    tokens = scanner.tokenize(expression)
 
     parser = ExprParser(line)
     rootNode = parser.parse(tokens)
