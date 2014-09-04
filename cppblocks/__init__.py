@@ -29,4 +29,6 @@ def getDisabledBlocks(filepath, analyzeHeaders, includeDirsAngle, includeDirsQuo
 
     disabledBlocks = analyzeFile(filepath, analyzeHeaders, fileFinderAngleInclude, fileFinderQuoteInclude, symbolDatabase)
 
+    log('disabledBlocks', disabledBlocks)
+
     return disabledBlocks

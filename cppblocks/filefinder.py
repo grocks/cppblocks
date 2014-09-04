@@ -1,6 +1,9 @@
 '''
 The class FileFinder manages a list of paths and performs file lookups among them.
 '''
+import trace
+def log(*args):
+    trace.trace('cppblocks.filefinder', *args)
 
 from os.path import join as pathJoin, exists as pathExists, realpath, dirname
 
@@ -15,6 +18,7 @@ class FileFinder:
 
         for candidate in candidates:
             if pathExists(candidate):
+                log('incdir: {0} -> {1}'.format(path, candidate))
                 return candidate
 
         raise FileNotFound(path)
@@ -37,5 +41,6 @@ class CurDirFileFinder(FileFinder):
     def lookup(self, curDirFilePath, path):
         candidate = pathJoin(dirname(curDirFilePath), path)
         if pathExists(candidate):
+            log('curdir: {0} -> {1}'.format(path, candidate))
             return candidate
         return FileFinder.lookup(self, path)

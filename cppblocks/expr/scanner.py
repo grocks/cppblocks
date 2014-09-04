@@ -2,6 +2,10 @@
 The ExprScanner parses a CPP conditional expression (#if/#elif) and tokenizes it.
 '''
 
+import trace
+def log(*args):
+    trace.trace('cppblocks.expr.scanner', *args)
+
 from ..lib.spark import GenericScanner
 
 class Token:
@@ -106,4 +110,5 @@ class ExprScanner(GenericScanner):
 
     def t_default(self, s):
         from ..messages import UnsupportedToken
+        log('unsupported token: ' + str(s))
         raise UnsupportedToken(s)

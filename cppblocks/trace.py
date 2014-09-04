@@ -8,11 +8,13 @@ def warning(msg):
 # A list that includes all the names of traceable modules in cppblocks
 __TRACEABLE_MODULES = set([
     'cppblocks',
-    'cppblocks.main',
-    'cppblocks.scanner',
-    'cppblocks.scanner.submodule',
-    'cppblocks.parser',
-    'cppblocks.parser.submodule'
+    'cppblocks.analyzer',
+    'cppblocks.compiler',
+    'cppblocks.expr',
+    'cppblocks.expr.eval',
+    'cppblocks.expr.scanner',
+    'cppblocks.filefinder',
+    'cppblocks.main'
 ])
 
 # A set of the modules, which are currently traced.
@@ -77,7 +79,9 @@ def trace(module, *args):
     shortName = make_shortname(module)
 
     printableArgs = map(str, args)
-    msg = "\n\t".join(printableArgs)
+    msg = "\n".join(printableArgs)
+    # Add indentation after all newlines
+    msg = msg.replace("\n", "\n\t")
 
     print '{0}: {1}'.format(shortName, msg)
 
