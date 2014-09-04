@@ -13,6 +13,7 @@ import traceback
 parser = argparse.ArgumentParser(description='Test framework to validate the output of CppBlocks.')
 parser.add_argument('-t', '--tolerance', metavar="NLINES", type=int, action='store', default=0, help='A number of lines that the block returned from CppBlocks might differ in length from the expected block length. (The start line must still be the same. Default: 0)')
 parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Enable verbose mode. (Default: off)')
+parser.add_argument('-l', '--trace', action='store', default='', help='Enable tracing for the given modules. (A comma separated list, e.g., --trace "cppblocks.main,cppblocks.scanner")')
 parser.add_argument('tests', metavar="TESTS", type=str, action='store', nargs='?', default='.', help='A regular expression to select (a subset of) the test suite. (Default: ".")')
 args = parser.parse_args()
 tolerance = args.tolerance
@@ -24,6 +25,11 @@ testDir = os.path.dirname(__file__)
 sys.path.append(os.path.join(testDir, '../..'))
 
 import cppblocks
+
+from cppblocks.trace import enable_tracing_from_string
+
+if args.trace:
+    enable_tracing_from_string(args.trace)
 
 verbose = args.verbose
 
