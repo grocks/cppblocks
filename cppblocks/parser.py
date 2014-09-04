@@ -289,11 +289,11 @@ class CppParser(GenericParser):
             controlLine ::= includeAngle
         '''
         t = args[0]
-        return astIncludeAngleNode(self, t.path)
+        return astIncludeAngleNode(t.line, t.path)
 
     def p_includeQuote(self, args):
         '''
             controlLine ::= includeQuote
         '''
         t = args[0]
-        return astIncludeQuoteNode(self, t.path)
+        return astIncludeQuoteNode(t.line, t.path)
